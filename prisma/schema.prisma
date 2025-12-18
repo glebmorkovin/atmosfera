@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PLAYER
+  PARENT
+  SCOUT
+  AGENT
+  ADMIN
+}
+
+enum Position {
+  C
+  LW
+  RW
+  D
+  G
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MediaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  PROFILE_VIEW
+  SHORTLIST_ADD
+  SYSTEM
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  passwordHash String
+  role        UserRole
+  firstName   String
+  lastName    String
+  country     String?
+  city        String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  player      Player?
+  parent      ParentProfile?
+  shortlists  Shortlist[]
+  media       Media[]
+  notes       Note[]
+  notifications NotificationSettings?
+  resetTokens PasswordResetToken[]
+  refreshTokens RefreshToken[]
+  savedSearchFilters SavedSearchFilter[]
+  notificationsFeed Notification[]
+  auditLogs   AuditLog[]
+  viewedProfiles ProfileViewEvent[] @relation("ViewerEvents")
+
+  @@index([role])
+}
+
+model Player {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  firstName   String
+  lastName    String
+  middleName  String?
+  dateOfBirth DateTime
+  nationality String
+  country     String
+  city        String
+  heightCm    Int?
+  weightKg    Int?
+  shoots      String?
+  position    Position
+  currentClubId   String?
+  currentLeagueId String?
+  currentClub   Club?   @relation("CurrentClub", fields: [currentClubId], references: [id])
+  currentLeague League? @relation("CurrentLeague", fields: [currentLeagueId], references: [id])
+  jerseyNumber Int?
+  agentName   String?
+  agentContact String?
+  bioText     String?
+  isPublicInSearch Boolean @default(true)
+  showContactsToScoutsOnly Boolean @default(true)
+  contactEmail String?
+  contactPhone String?
+  mainPhotoId  String?
+  isActive     Boolean @default(true)
+  moderationStatus ModerationStatus @default(PENDING)
+  moderationComment String?
+  shareToken   String   @unique @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  clubHistory      PlayerClubHistory[]
+  statLines        PlayerStatLine[]
+  achievements     PlayerAchievement[]
+  media            Media[]
+  parents          PlayerParent[]
+  shortlistEntries ShortlistPlayer[]
+  notes            Note[]
+  profileViews     ProfileViewEvent[]
+
+  @@index([position])
+  @@index([dateOfBirth])
+  @@index([currentLeagueId])
+  @@index([currentClubId])
+  @@index([isPublicInSearch])
+}
+
+model ParentProfile {
+  id      String @id @default(cuid())
+  userId  String @unique
+  user    User   @relation(fields: [userId], references: [id])
+  contactInfo String?
+  players PlayerParent[]
+}
+
+model PlayerParent {
+  playerId String
+  parentId String
+  relationType String?
+
+  player Player @relation(fields: [playerId], references: [id])
+  parent ParentProfile @relation(fields: [parentId], references: [id])
+
+  @@id([playerId, parentId])
+}
+
+model Club {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  country   String?
+  city      String?
+  leagueId  String?
+  createdAt DateTime @default(now())
+
+  league    League? @relation(fields: [leagueId], references: [id])
+  players   Player[] @relation("CurrentClub")
+  statLines PlayerStatLine[]
+  histories PlayerClubHistory[]
+}
+
+model League {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  country   String?
+  level     String?
+  createdAt DateTime @default(now())
+
+  clubs     Club[]
+  players   Player[] @relation("CurrentLeague")
+  statLines PlayerStatLine[]
+  histories PlayerClubHistory[]
+}
+
+model Season {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  startYear Int
+  endYear   Int
+  createdAt DateTime @default(now())
+
+  statLines PlayerStatLine[]
+  histories PlayerClubHistory[]
+}
+
+model PlayerClubHistory {
+  id        String   @id @default(cuid())
+  playerId  String
+  clubId    String
+  leagueId  String?
+  seasonId  String
+  comment   String?
+
+  player Player @relation(fields: [playerId], references: [id])
+  club   Club   @relation(fields: [clubId], references: [id])
+  league League? @relation(fields: [leagueId], references: [id])
+  season Season @relation(fields: [seasonId], references: [id])
+}
+
+model PlayerStatLine {
+  id        String   @id @default(cuid())
+  playerId  String
+  seasonId  String
+  teamId    String?
+  leagueId  String?
+  gamesPlayed Int?
+  goals       Int?
+  assists     Int?
+  points      Int?
+  pim         Int?
+  plusMinus   Int?
+  customMetrics Json?
+
+  player Player @relation(fields: [playerId], references: [id])
+  season Season @relation(fields: [seasonId], references: [id])
+  team   Club?  @relation(fields: [teamId], references: [id])
+  league League? @relation(fields: [leagueId], references: [id])
+
+  @@index([seasonId])
+  @@index([leagueId])
+  @@index([gamesPlayed])
+  @@index([goals])
+  @@index([points])
+}
+
+model PlayerAchievement {
+  id         String   @id @default(cuid())
+  playerId   String
+  year       Int
+  tournament String
+  result     String
+  comment    String?
+
+  player Player @relation(fields: [playerId], references: [id])
+}
+
+model Media {
+  id            String   @id @default(cuid())
+  playerId      String?
+  ownerUserId   String
+  mediaType     String
+  urlOrPath     String
+  title         String?
+  description   String?
+  isProfileMain Boolean @default(false)
+  status        MediaStatus @default(PENDING)
+  moderationComment String?
+  createdAt     DateTime @default(now())
+
+  player Player? @relation(fields: [playerId], references: [id])
+  owner  User    @relation(fields: [ownerUserId], references: [id])
+
+  @@index([playerId])
+  @@index([status])
+}
+
+model Shortlist {
+  id           String   @id @default(cuid())
+  ownerUserId  String
+  name         String
+  description  String?
+  createdAt    DateTime @default(now())
+
+  owner   User   @relation(fields: [ownerUserId], references: [id])
+  players ShortlistPlayer[]
+  notes   Note[]
+}
+
+model ShortlistPlayer {
+  shortlistId String
+  playerId    String
+
+  shortlist Shortlist @relation(fields: [shortlistId], references: [id])
+  player    Player    @relation(fields: [playerId], references: [id])
+
+  @@id([shortlistId, playerId])
+}
+
+model Note {
+  id            String   @id @default(cuid())
+  ownerUserId   String
+  playerId      String?
+  shortlistId   String?
+  text          String
+  createdAt     DateTime @default(now())
+
+  owner    User      @relation(fields: [ownerUserId], references: [id])
+  player   Player?   @relation(fields: [playerId], references: [id])
+  shortlist Shortlist? @relation(fields: [shortlistId], references: [id])
+}
+
+model ProfileViewEvent {
+  id           String   @id @default(cuid())
+  playerId     String
+  viewerUserId String?
+  viewedAt     DateTime @default(now())
+
+  player Player @relation(fields: [playerId], references: [id])
+  viewer User?  @relation("ViewerEvents", fields: [viewerUserId], references: [id])
+
+  @@index([playerId, viewedAt])
+}
+
+model NotificationSettings {
+  id                   String  @id @default(cuid())
+  userId               String  @unique
+  profileViewsEmail    Boolean @default(true)
+  shortlistAddEmail    Boolean @default(true)
+  marketingEmail       Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model SavedSearchFilter {
+  id          String   @id @default(cuid())
+  ownerUserId String
+  name        String
+  config      Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner User @relation(fields: [ownerUserId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  payload   Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorUserId  String?
+  action       String
+  entityType   String
+  entityId     String?
+  payload      Json?
+  createdAt    DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+}

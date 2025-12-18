@@ -1,0 +1,36 @@
+[
+  {
+    "email": "player1@example.com",
+    "password": "Passw0rd!",
+    "firstName": "Иван",
+    "lastName": "Иванов",
+    "position": "C",
+    "dateOfBirth": "2006-02-15",
+    "country": "Россия",
+    "city": "Москва",
+    "heightCm": 182,
+    "weightKg": 78,
+    "currentClubName": "СКА",
+    "currentLeagueName": "КХЛ",
+    "stats": [
+      { "seasonName": "2023/2024", "leagueName": "КХЛ", "teamName": "СКА", "gamesPlayed": 12, "goals": 4, "assists": 6, "points": 10 }
+    ]
+  },
+  {
+    "email": "player2@example.com",
+    "password": "Passw0rd!",
+    "firstName": "Павел",
+    "lastName": "Петров",
+    "position": "D",
+    "dateOfBirth": "2005-07-01",
+    "country": "Россия",
+    "city": "Санкт-Петербург",
+    "heightCm": 188,
+    "weightKg": 86,
+    "currentClubName": "СКА-1946",
+    "currentLeagueName": "МХЛ",
+    "stats": [
+      { "seasonName": "2023/2024", "leagueName": "МХЛ", "teamName": "СКА-1946", "gamesPlayed": 20, "goals": 2, "assists": 9, "points": 11, "pim": 12 }
+    ]
+  }
+]

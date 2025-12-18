@@ -1,0 +1,22 @@
+{
+  "leagues": [
+    { "name": "КХЛ", "country": "Россия", "level": "pro" },
+    { "name": "ВХЛ", "country": "Россия", "level": "pro" },
+    { "name": "МХЛ", "country": "Россия", "level": "junior" }
+  ],
+  "clubs": [
+    { "name": "СКА", "country": "Россия", "city": "Санкт-Петербург", "leagueName": "КХЛ" },
+    { "name": "ЦСКА", "country": "Россия", "city": "Москва", "leagueName": "КХЛ" },
+    { "name": "Металлург Магнитогорск", "country": "Россия", "city": "Магнитогорск", "leagueName": "КХЛ" },
+    { "name": "ХК Сочи", "country": "Россия", "city": "Сочи", "leagueName": "КХЛ" },
+    { "name": "АК Барс", "country": "Россия", "city": "Казань", "leagueName": "КХЛ" },
+    { "name": "СКА-1946", "country": "Россия", "city": "Санкт-Петербург", "leagueName": "МХЛ" },
+    { "name": "Красная Армия", "country": "Россия", "city": "Москва", "leagueName": "МХЛ" },
+    { "name": "Рубин Тюмень", "country": "Россия", "city": "Тюмень", "leagueName": "ВХЛ" }
+  ],
+  "seasons": [
+    { "name": "2022/2023", "startYear": 2022, "endYear": 2023 },
+    { "name": "2023/2024", "startYear": 2023, "endYear": 2024 },
+    { "name": "2024/2025", "startYear": 2024, "endYear": 2025 }
+  ]
+}

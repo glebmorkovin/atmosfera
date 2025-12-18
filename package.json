@@ -1,0 +1,19 @@
+{
+  "name": "atmosfera",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace web",
+    "dev:api": "npm run start:dev --workspace api"
+  },
+  "prisma": {
+    "seed": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' ts-node --transpile-only prisma/seed.ts"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}
