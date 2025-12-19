@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { saveRole } from "@/lib/auth";
 
 const roles = [
   { value: "player", label: "Я игрок" },
@@ -41,6 +42,7 @@ export default function RegisterPage() {
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
+        saveRole(role);
       }
       setMessage("Аккаунт создан, токены сохранены. Можно заходить в кабинеты.");
     } catch (err) {

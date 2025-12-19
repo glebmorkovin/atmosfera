@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
+import { roleHome, saveRole } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -33,6 +34,7 @@ export default function LoginPage() {
       if (typeof window !== "undefined") {
         localStorage.setItem("accessToken", data.accessToken);
         localStorage.setItem("refreshToken", data.refreshToken);
+        saveRole(data.user?.role);
       }
       setMessage("Успех: токены сохранены. Перенаправляем...");
       redirectByRole(data.user?.role);

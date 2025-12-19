@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NotificationsIndicator } from "@/components/notifications-indicator";
+import { RoleAwareNav } from "@/components/role-aware-nav";
 
 export const metadata: Metadata = {
   title: "Атмосфера — цифровые профили хоккеистов",
@@ -21,15 +22,12 @@ export default function RootLayout({
             <Link href="/" className="text-lg font-semibold">
               Атмосфера
             </Link>
-            <nav className="flex items-center gap-4 text-sm text-white/80">
-              <Link href="/player/dashboard">Игрок</Link>
-              <Link href="/scout">Скаут</Link>
-              <Link href="/admin">Админ</Link>
+            <RoleAwareNav>
               <Link href="/notifications" className="flex items-center gap-1">
                 Уведомления
                 <NotificationsIndicator />
               </Link>
-            </nav>
+            </RoleAwareNav>
           </div>
         </header>
         {children}

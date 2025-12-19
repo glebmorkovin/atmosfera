@@ -33,6 +33,7 @@ const clearTokens = () => {
   refreshToken = null;
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("userRole");
 };
 
 async function refreshTokens() {
