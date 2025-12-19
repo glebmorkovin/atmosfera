@@ -9,8 +9,24 @@ async function bootstrap() {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
+  const isAllowedOrigin = (origin?: string) => {
+    if (!origin) return true;
+    return corsOrigins.some((allowed) => {
+      if (allowed.includes("*")) {
+        const regex = new RegExp(`^${allowed.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`);
+        return regex.test(origin);
+      }
+      return allowed === origin;
+    });
+  };
+
   app.enableCors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true
   });
   app.setGlobalPrefix("api");
