@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
-import { saveRole } from "@/lib/auth";
+import { getStoredRole, roleHome, saveRole } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 
 const roles = [
   { value: "player", label: "Я игрок" },
@@ -24,6 +25,14 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const storedRole = getStoredRole();
+    if (storedRole) {
+      router.replace(roleHome(storedRole));
+    }
+  }, [router]);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();

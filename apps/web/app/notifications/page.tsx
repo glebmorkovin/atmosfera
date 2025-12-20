@@ -69,9 +69,6 @@ export default function NotificationsPage() {
             <button className="ghost-btn px-4 py-2 text-sm" onClick={markAll}>
               Отметить все прочитанными
             </button>
-            <Link href="/" className="ghost-btn">
-              На главную
-            </Link>
           </div>
         </div>
 

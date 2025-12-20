@@ -90,9 +90,6 @@ export default function PlayerDashboardPage() {
             {error && <p className="text-sm text-amber-300">{error}</p>}
             {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
-          <Link href="/" className="ghost-btn">
-            На главную
-          </Link>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getStoredRole, roleHome, UserRole } from "@/lib/auth";
+import { logoutClient } from "@/lib/api-client";
 
 const navByRole: Record<UserRole, { href: string; label: string }[]> = {
   PLAYER: [
@@ -35,10 +37,18 @@ const navByRole: Record<UserRole, { href: string; label: string }[]> = {
 
 export function RoleAwareNav({ children }: { children?: React.ReactNode }) {
   const [role, setRole] = useState<UserRole | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     setRole(getStoredRole());
   }, []);
+
+  const handleLogout = () => {
+    if (!window.confirm("Вы точно хотите выйти из аккаунта?")) return;
+    logoutClient();
+    setRole(null);
+    router.replace("/");
+  };
 
   if (!role) {
     return (
@@ -59,6 +69,9 @@ export function RoleAwareNav({ children }: { children?: React.ReactNode }) {
           {item.label}
         </Link>
       ))}
+      <button type="button" onClick={handleLogout} className="text-white/70 hover:text-white">
+        Выйти
+      </button>
       {children}
     </nav>
   );

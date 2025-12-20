@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
-import { roleHome, saveRole } from "@/lib/auth";
+import { getStoredRole, roleHome, saveRole } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,13 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const role = getStoredRole();
+    if (role) {
+      router.replace(roleHome(role));
+    }
+  }, [router]);
 
   const redirectByRole = (role?: string) => {
     if (!role) return;

@@ -15,9 +15,6 @@ export default function ScoutHome() {
           <h1 className="text-3xl font-bold">Инструменты поиска и шортлистов</h1>
           <p className="text-white/70">Выберите раздел: поиск, шортлисты, уведомления.</p>
         </div>
-        <Link href="/" className="ghost-btn">
-          На главную
-        </Link>
       </div>
       <div className="grid gap-4 md:grid-cols-3">
         {links.map((link) => (
