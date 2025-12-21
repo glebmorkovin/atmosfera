@@ -1,3 +1,5 @@
+import { clearAuth } from "@/lib/auth";
+
 type FetchOptions = {
   method?: string;
   headers?: Record<string, string>;
@@ -31,9 +33,7 @@ const clearTokens = () => {
   if (typeof window === "undefined") return;
   accessToken = null;
   refreshToken = null;
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("userRole");
+  clearAuth();
 };
 
 async function refreshTokens() {

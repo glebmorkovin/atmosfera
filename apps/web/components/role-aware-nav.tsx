@@ -8,30 +8,45 @@ import { logoutClient } from "@/lib/api-client";
 
 const navByRole: Record<UserRole, { href: string; label: string }[]> = {
   PLAYER: [
-    { href: "/player/dashboard", label: "Игрок" },
-    { href: "/player/profile", label: "Профиль" },
-    { href: "/player/stats", label: "Статистика" },
-    { href: "/player/media", label: "Медиа" }
+    { href: "/app/player/dashboard", label: "Дашборд" },
+    { href: "/app/player/profile", label: "Профиль" },
+    { href: "/app/player/profile/edit", label: "Редактировать профиль" },
+    { href: "/app/player/stats", label: "Статистика" },
+    { href: "/app/player/media", label: "Медиа" },
+    { href: "/app/player/requests", label: "Запросы" },
+    { href: "/app/player/applications", label: "Отклики" },
+    { href: "/app/player/settings", label: "Настройки" }
   ],
   PARENT: [
-    { href: "/player/dashboard", label: "Игрок (родитель)" },
-    { href: "/player/profile", label: "Профиль" }
+    { href: "/app/parent/dashboard", label: "Дашборд" },
+    { href: "/app/parent/children", label: "Дети" },
+    { href: "/app/parent/requests", label: "Запросы" },
+    { href: "/app/parent/applications", label: "Отклики" },
+    { href: "/app/parent/settings", label: "Настройки" }
   ],
   SCOUT: [
-    { href: "/scout", label: "Скаут" },
-    { href: "/scout/search", label: "Поиск" },
-    { href: "/scout/shortlists", label: "Шортлисты" }
+    { href: "/app/scout/dashboard", label: "Дашборд" },
+    { href: "/app/scout/search", label: "Поиск игроков" },
+    { href: "/app/scout/shortlists", label: "Шортлисты" },
+    { href: "/app/scout/working", label: "Мои игроки" },
+    { href: "/app/scout/requests", label: "Запросы" },
+    { href: "/app/scout/settings", label: "Настройки" }
   ],
-  AGENT: [
-    { href: "/scout", label: "Клуб/Агент" },
-    { href: "/scout/search", label: "Поиск" },
-    { href: "/scout/shortlists", label: "Шортлисты" }
-  ],
-  ADMIN: [{ href: "/admin", label: "Админ" }],
   CLUB: [
-    { href: "/scout", label: "Клуб" },
-    { href: "/scout/search", label: "Поиск" },
-    { href: "/scout/shortlists", label: "Шортлисты" }
+    { href: "/app/club/dashboard", label: "Дашборд" },
+    { href: "/app/club/search", label: "Поиск игроков" },
+    { href: "/app/club/shortlists", label: "Шортлисты" },
+    { href: "/app/club/working", label: "Кандидаты в работе" },
+    { href: "/app/club/vacancies", label: "Вакансии" },
+    { href: "/app/club/requests", label: "Запросы" },
+    { href: "/app/club/settings", label: "Настройки" }
+  ],
+  ADMIN: [
+    { href: "/admin/dashboard", label: "Админ" },
+    { href: "/admin/players", label: "Профили игроков" },
+    { href: "/admin/media", label: "Медиа" },
+    { href: "/admin/refs", label: "Справочники" },
+    { href: "/admin/audit", label: "Журнал" }
   ]
 };
 

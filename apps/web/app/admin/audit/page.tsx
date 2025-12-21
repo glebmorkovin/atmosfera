@@ -46,7 +46,7 @@ export default function AdminAuditPage() {
           {error && <p className="text-sm text-amber-300">{error}</p>}
           {loading && <p className="text-sm text-white/60">Загрузка...</p>}
         </div>
-        <Link href="/admin" className="ghost-btn">
+        <Link href="/admin/dashboard" className="ghost-btn">
           Назад
         </Link>
       </div>

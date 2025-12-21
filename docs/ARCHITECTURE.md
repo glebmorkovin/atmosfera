@@ -13,7 +13,7 @@
 
 ## Бэкенд (api)
 - Глобальный префикс `api`.
-- Auth: регистрация/логин, refresh/logout, reset password, RBAC (PLAYER/PARENT/SCOUT/AGENT/ADMIN).
+- Auth: регистрация/логин, refresh/logout, reset password, RBAC (PLAYER/PARENT/SCOUT/CLUB/ADMIN).
 - Users: `GET /users/me`.
 - Players: `GET /players`, `GET /players/:id`, `GET /players/search` (фильтры+пагинация), `POST /players/:id/view`, `PUT /players/:id` (редактирование профиля), CRUD стат-линий `POST /players/:id/stats`, `PUT/DELETE /players/stats/:statId`, CRUD истории клубов `POST /players/:id/history`, `PUT/DELETE /players/history/:historyId`, CRUD достижений `POST /players/:id/achievements`, `PUT/DELETE /players/achievements/:achievementId`.
 - Profile views: `/profile-views/:playerId/stats` (7/30/90).
@@ -28,7 +28,7 @@
 - Валидация `class-validator`, Prisma через `PrismaService`.
 
 ## Приватность и роли (план)
-- Роли: guest, player, parent, scout/club, agent, admin (enum `UserRole`).
+- Роли: guest, player, parent, scout/club, admin (enum `UserRole`).
 - Приватность профиля: `isPublicInSearch`, `showContactsToScoutsOnly`.
 - Админ-модерация: статусы профилей и медиа (можно расширить схемой).
 

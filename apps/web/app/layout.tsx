@@ -1,8 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { NotificationsIndicator } from "@/components/notifications-indicator";
-import { RoleAwareNav } from "@/components/role-aware-nav";
+import { AppHeader } from "@/components/app-header";
 
 export const metadata: Metadata = {
   title: "Атмосфера — цифровые профили хоккеистов",
@@ -17,19 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className="bg-gradient-to-b from-secondary via-secondary to-black text-white">
-        <header className="border-b border-white/10 bg-black/50">
-          <div className="container flex items-center justify-between py-4">
-            <Link href="/" className="text-lg font-semibold">
-              Атмосфера
-            </Link>
-            <RoleAwareNav>
-              <Link href="/notifications" className="flex items-center gap-1">
-                Уведомления
-                <NotificationsIndicator />
-              </Link>
-            </RoleAwareNav>
-          </div>
-        </header>
+        <AppHeader />
         {children}
       </body>
     </html>

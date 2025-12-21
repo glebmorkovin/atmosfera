@@ -7,7 +7,7 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 
 @Controller("search-filters")
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("SCOUT", "ADMIN")
+@Roles("SCOUT", "CLUB", "ADMIN")
 export class SearchFiltersController {
   constructor(private readonly searchFiltersService: SearchFiltersService) {}
 

@@ -14,12 +14,16 @@ import {
 import { PlayersService } from "./players.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { RolesGuard } from "../common/guards/roles.guard";
+import { Roles } from "../common/decorators/roles.decorator";
 
 @Controller("players")
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PlayersController {
   constructor(private readonly playersService: PlayersService) {}
 
   @Get()
+  @Roles("SCOUT", "CLUB", "ADMIN")
   getPlayers(
     @Query("position") position?: string,
     @Query("league") league?: string,
@@ -31,77 +35,79 @@ export class PlayersController {
   }
 
   @Get(":id")
-  getPlayer(@Param("id") id: string) {
-    return this.playersService.getById(id);
+  @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
+  getPlayer(@Param("id") id: string, @CurrentUser() user: any) {
+    return this.playersService.getById(id, user);
   }
 
   @Post(":id/view")
-  @UseGuards(JwtAuthGuard)
+  @Roles("SCOUT", "CLUB", "ADMIN")
   trackView(@Param("id") id: string, @CurrentUser() user: any) {
     return this.playersService.trackView(id, user?.id);
   }
 
   @Put(":id")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   updateProfile(@Param("id") id: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.updateProfile(id, payload, user);
   }
 
   @Post(":id/stats")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   addStat(@Param("id") id: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.addStatLine(id, payload, user);
   }
 
   @Put("stats/:statId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   updateStat(@Param("statId") statId: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.updateStatLine(statId, payload, user);
   }
 
   @Delete("stats/:statId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   deleteStat(@Param("statId") statId: string, @CurrentUser() user: any) {
     return this.playersService.deleteStatLine(statId, user);
   }
 
   @Post(":id/history")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   addHistory(@Param("id") id: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.addHistory(id, payload, user);
   }
 
   @Put("history/:historyId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   updateHistory(@Param("historyId") historyId: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.updateHistory(historyId, payload, user);
   }
 
   @Delete("history/:historyId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   deleteHistory(@Param("historyId") historyId: string, @CurrentUser() user: any) {
     return this.playersService.deleteHistory(historyId, user);
   }
 
   @Post(":id/achievements")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   addAchievement(@Param("id") id: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.addAchievement(id, payload, user);
   }
 
   @Put("achievements/:achievementId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   updateAchievement(@Param("achievementId") achievementId: string, @Body() payload: any, @CurrentUser() user: any) {
     return this.playersService.updateAchievement(achievementId, payload, user);
   }
 
   @Delete("achievements/:achievementId")
-  @UseGuards(JwtAuthGuard)
+  @Roles("PLAYER", "PARENT", "ADMIN")
   deleteAchievement(@Param("achievementId") achievementId: string, @CurrentUser() user: any) {
     return this.playersService.deleteAchievement(achievementId, user);
   }
 
   @Get("search")
+  @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
   searchPlayers(
     @Query("position") position?: string,
     @Query("leagueId") leagueId?: string,
@@ -119,7 +125,8 @@ export class PlayersController {
     @Query("minGoals", ParseIntPipe) minGoals?: number,
     @Query("minPoints", ParseIntPipe) minPoints?: number,
     @Query("page", ParseIntPipe) page = 1,
-    @Query("pageSize", ParseIntPipe) pageSize = 20
+    @Query("pageSize", ParseIntPipe) pageSize = 20,
+    @CurrentUser() user?: any
   ) {
     return this.playersService.search(
       {
@@ -139,7 +146,8 @@ export class PlayersController {
         minGoals,
         minPoints
       },
-      { page, pageSize }
+      { page, pageSize },
+      user
     );
   }
 }

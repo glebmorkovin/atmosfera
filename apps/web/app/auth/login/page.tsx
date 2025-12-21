@@ -23,9 +23,7 @@ export default function LoginPage() {
 
   const redirectByRole = (role?: string) => {
     if (!role) return;
-    if (role === "ADMIN") return router.push("/admin");
-    if (role === "SCOUT" || role === "AGENT") return router.push("/scout");
-    return router.push("/player/dashboard");
+    return router.push(roleHome(role));
   };
 
   const handleSubmit = async (event: FormEvent) => {

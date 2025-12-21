@@ -5,7 +5,7 @@
 ## Стек
 - Frontend: Next.js 14 (App Router) + TypeScript + Tailwind.
 - Backend: NestJS + TypeScript + Prisma + PostgreSQL, REST API.
-- Auth: email+пароль, JWT (access+refresh), RBAC (PLAYER, PARENT, SCOUT, AGENT, ADMIN).
+- Auth: email+пароль, JWT (access+refresh), RBAC (PLAYER, PARENT, SCOUT, CLUB, ADMIN).
 
 ## Структура
 - `apps/web` — фронтенд.

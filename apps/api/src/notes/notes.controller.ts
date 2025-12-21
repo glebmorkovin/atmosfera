@@ -7,7 +7,7 @@ import { CurrentUser } from "../common/decorators/current-user.decorator";
 
 @Controller("notes")
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("SCOUT", "ADMIN")
+@Roles("SCOUT", "CLUB", "ADMIN")
 export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 

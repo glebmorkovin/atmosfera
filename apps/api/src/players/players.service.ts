@@ -86,7 +86,7 @@ export class PlayersService {
     });
   }
 
-  async getById(id: string) {
+  async getById(id: string, user?: { id: string; role: UserRole }) {
     const player = await this.prisma.player.findUnique({
       where: { id },
       include: {
@@ -105,10 +105,17 @@ export class PlayersService {
       }
     });
     if (!player) throw new NotFoundException("Player not found");
+    if (user?.role === UserRole.PLAYER && player.userId !== user.id) {
+      throw new ForbiddenException("Нет доступа");
+    }
+    if (user?.role === UserRole.PARENT) {
+      const isParent = await this.isParentOfPlayer(player.id, user.id);
+      if (!isParent) throw new ForbiddenException("Нет доступа");
+    }
     return player;
   }
 
-  async search(filters: SearchFilters, pagination: Pagination) {
+  async search(filters: SearchFilters, pagination: Pagination, user?: { id: string; role: UserRole }) {
     const {
       position,
       leagueId,
@@ -127,9 +134,10 @@ export class PlayersService {
       minPoints
     } = filters;
 
+    const enforcePublic = user?.role === UserRole.SCOUT || user?.role === UserRole.CLUB;
     const where: any = {
       isActive: true,
-      isPublicInSearch: true,
+      isPublicInSearch: enforcePublic ? true : undefined,
       position: position ? (position as any) : undefined,
       currentLeagueId: leagueId,
       currentClubId: clubId,
@@ -163,6 +171,12 @@ export class PlayersService {
             }
           : undefined
     };
+    if (user?.role === UserRole.PLAYER) {
+      where.userId = user.id;
+    }
+    if (user?.role === UserRole.PARENT) {
+      where.parents = { some: { parent: { userId: user.id } } };
+    }
 
     const page = Math.max(1, pagination.page || 1);
     const pageSize = Math.min(Math.max(1, pagination.pageSize || 20), 100);
@@ -234,9 +248,8 @@ export class PlayersService {
   async updateProfile(playerId: string, payload: any, user: { id: string; role: UserRole }) {
     const player = await this.prisma.player.findUnique({ where: { id: playerId } });
     if (!player) throw new NotFoundException("Player not found");
-    if (user.role !== UserRole.ADMIN && player.userId !== user.id) {
-      throw new ForbiddenException("Нет прав на редактирование");
-    }
+    const canEdit = await this.canEdit(player, user);
+    if (!canEdit) throw new ForbiddenException("Нет прав на редактирование");
     const data: any = {
       firstName: payload.firstName,
       lastName: payload.lastName,
@@ -256,16 +269,28 @@ export class PlayersService {
     return this.prisma.player.update({ where: { id: playerId }, data });
   }
 
-  private canEdit(player: { userId: string }, user: { id: string; role: UserRole }) {
+  private async isParentOfPlayer(playerId: string, userId: string) {
+    const parent = await this.prisma.parentProfile.findUnique({ where: { userId } });
+    if (!parent) return false;
+    const link = await this.prisma.playerParent.findUnique({
+      where: { playerId_parentId: { playerId, parentId: parent.id } }
+    });
+    return Boolean(link);
+  }
+
+  private async canEdit(player: { id: string; userId: string }, user: { id: string; role: UserRole }) {
     if (user.role === UserRole.ADMIN) return true;
     if (player.userId === user.id) return true;
+    if (user.role === UserRole.PARENT) {
+      return this.isParentOfPlayer(player.id, user.id);
+    }
     return false;
   }
 
   async addStatLine(playerId: string, payload: any, user: { id: string; role: UserRole }) {
     const player = await this.prisma.player.findUnique({ where: { id: playerId } });
     if (!player) throw new NotFoundException("Player not found");
-    if (!this.canEdit(player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerStatLine.create({
       data: {
         playerId,
@@ -285,7 +310,7 @@ export class PlayersService {
   async updateStatLine(statId: string, payload: any, user: { id: string; role: UserRole }) {
     const stat = await this.prisma.playerStatLine.findUnique({ where: { id: statId }, include: { player: true } });
     if (!stat) throw new NotFoundException("Stat not found");
-    if (!this.canEdit(stat.player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(stat.player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerStatLine.update({
       where: { id: statId },
       data: {
@@ -305,7 +330,7 @@ export class PlayersService {
   async deleteStatLine(statId: string, user: { id: string; role: UserRole }) {
     const stat = await this.prisma.playerStatLine.findUnique({ where: { id: statId }, include: { player: true } });
     if (!stat) throw new NotFoundException("Stat not found");
-    if (!this.canEdit(stat.player, user)) throw new ForbiddenException("Нет прав на удаление");
+    if (!(await this.canEdit(stat.player, user))) throw new ForbiddenException("Нет прав на удаление");
     await this.prisma.playerStatLine.delete({ where: { id: statId } });
     return { message: "Удалено" };
   }
@@ -313,7 +338,7 @@ export class PlayersService {
   async addHistory(playerId: string, payload: any, user: { id: string; role: UserRole }) {
     const player = await this.prisma.player.findUnique({ where: { id: playerId } });
     if (!player) throw new NotFoundException("Player not found");
-    if (!this.canEdit(player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerClubHistory.create({
       data: {
         playerId,
@@ -328,7 +353,7 @@ export class PlayersService {
   async updateHistory(historyId: string, payload: any, user: { id: string; role: UserRole }) {
     const history = await this.prisma.playerClubHistory.findUnique({ where: { id: historyId }, include: { player: true } });
     if (!history) throw new NotFoundException("History not found");
-    if (!this.canEdit(history.player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(history.player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerClubHistory.update({
       where: { id: historyId },
       data: {
@@ -343,7 +368,7 @@ export class PlayersService {
   async deleteHistory(historyId: string, user: { id: string; role: UserRole }) {
     const history = await this.prisma.playerClubHistory.findUnique({ where: { id: historyId }, include: { player: true } });
     if (!history) throw new NotFoundException("History not found");
-    if (!this.canEdit(history.player, user)) throw new ForbiddenException("Нет прав на удаление");
+    if (!(await this.canEdit(history.player, user))) throw new ForbiddenException("Нет прав на удаление");
     await this.prisma.playerClubHistory.delete({ where: { id: historyId } });
     return { message: "Удалено" };
   }
@@ -351,7 +376,7 @@ export class PlayersService {
   async addAchievement(playerId: string, payload: any, user: { id: string; role: UserRole }) {
     const player = await this.prisma.player.findUnique({ where: { id: playerId } });
     if (!player) throw new NotFoundException("Player not found");
-    if (!this.canEdit(player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerAchievement.create({
       data: {
         playerId,
@@ -366,7 +391,7 @@ export class PlayersService {
   async updateAchievement(achievementId: string, payload: any, user: { id: string; role: UserRole }) {
     const achievement = await this.prisma.playerAchievement.findUnique({ where: { id: achievementId }, include: { player: true } });
     if (!achievement) throw new NotFoundException("Achievement not found");
-    if (!this.canEdit(achievement.player, user)) throw new ForbiddenException("Нет прав на редактирование");
+    if (!(await this.canEdit(achievement.player, user))) throw new ForbiddenException("Нет прав на редактирование");
     return this.prisma.playerAchievement.update({
       where: { id: achievementId },
       data: {
@@ -381,7 +406,7 @@ export class PlayersService {
   async deleteAchievement(achievementId: string, user: { id: string; role: UserRole }) {
     const achievement = await this.prisma.playerAchievement.findUnique({ where: { id: achievementId }, include: { player: true } });
     if (!achievement) throw new NotFoundException("Achievement not found");
-    if (!this.canEdit(achievement.player, user)) throw new ForbiddenException("Нет прав на удаление");
+    if (!(await this.canEdit(achievement.player, user))) throw new ForbiddenException("Нет прав на удаление");
     await this.prisma.playerAchievement.delete({ where: { id: achievementId } });
     return { message: "Удалено" };
   }

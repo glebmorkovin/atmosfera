@@ -1,6 +1,6 @@
 import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
 
-export type RegisterRole = "player" | "parent" | "scout" | "agent" | "admin";
+export type RegisterRole = "player" | "parent" | "scout" | "club" | "admin";
 
 export class RegisterDto {
   @IsEmail()

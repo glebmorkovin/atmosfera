@@ -99,7 +99,7 @@ export default function AdminRefsPage() {
           {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           {msg && <p className="text-sm text-emerald-300">{msg}</p>}
         </div>
-        <Link href="/admin" className="ghost-btn">
+        <Link href="/admin/dashboard" className="ghost-btn">
           Назад
         </Link>
       </div>
