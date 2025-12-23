@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
-import { getStoredRole, roleHome, saveRole } from "@/lib/auth";
+import { getStoredRole, roleHome, saveRole, saveTokens } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -23,9 +23,7 @@ export default function LoginPage() {
 
   const redirectByRole = (role?: string) => {
     if (!role) return;
-    if (role === "ADMIN") return router.push("/admin");
-    if (role === "SCOUT" || role === "AGENT") return router.push("/scout");
-    return router.push("/player/dashboard");
+    return router.push(roleHome(role));
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -39,8 +37,7 @@ export default function LoginPage() {
         body: { email, password }
       });
       if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+        saveTokens(data.accessToken, data.refreshToken);
         saveRole(data.user?.role);
       }
       setMessage("Успех: токены сохранены. Перенаправляем...");

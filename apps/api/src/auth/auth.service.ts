@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import { RegisterDto, RegisterRole } from "./dto/register.dto";
@@ -37,6 +37,8 @@ const mapRole = (role: RegisterRole): UserRole => {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(private readonly usersService: UsersService) {}
 
   private signTokens(user: { id: string; email: string; role: UserRole }) {
@@ -75,13 +77,22 @@ export class AuthService {
   }
 
   async login(payload: LoginDto) {
-    const user = await this.usersService.validateUser(payload.email, payload.password);
-    if (!user) {
-      throw new UnauthorizedException("Неверный email или пароль");
+    try {
+      const user = await this.usersService.validateUser(payload.email, payload.password);
+      if (!user) {
+        this.logger.warn(`Invalid login attempt for ${payload.email}`);
+        throw new UnauthorizedException("Неверный email или пароль");
+      }
+      const tokens = this.signTokens(user);
+      await this.usersService.saveRefreshToken(user.id, tokens.refreshToken, REFRESH_TTL_SEC);
+      return { ...tokens, user: sanitizeUser(user) };
+    } catch (err) {
+      if (err instanceof UnauthorizedException) {
+        throw err;
+      }
+      this.logger.error(`Login failed for ${payload.email}`, err instanceof Error ? err.stack : undefined);
+      throw new ServiceUnavailableException("Сервис авторизации временно недоступен");
     }
-    const tokens = this.signTokens(user);
-    await this.usersService.saveRefreshToken(user.id, tokens.refreshToken, REFRESH_TTL_SEC);
-    return { ...tokens, user: sanitizeUser(user) };
   }
 
   async refresh(payload: RefreshDto) {

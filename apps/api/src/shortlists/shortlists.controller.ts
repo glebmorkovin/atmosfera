@@ -8,7 +8,7 @@ import { Response } from "express";
 
 @Controller("shortlists")
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles("SCOUT", "ADMIN")
+@Roles("SCOUT", "CLUB", "ADMIN")
 export class ShortlistsController {
   constructor(private readonly shortlistsService: ShortlistsService) {}
 

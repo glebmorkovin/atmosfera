@@ -5,7 +5,7 @@
 ## Стек
 - Frontend: Next.js 14 (App Router) + TypeScript + Tailwind.
 - Backend: NestJS + TypeScript + Prisma + PostgreSQL, REST API.
-- Auth: email+пароль, JWT (access+refresh), RBAC (PLAYER, PARENT, SCOUT, AGENT, ADMIN).
+- Auth: email+пароль, JWT (access+refresh), RBAC (PLAYER, PARENT, SCOUT, CLUB, ADMIN).
 
 ## Структура
 - `apps/web` — фронтенд.
@@ -31,6 +31,7 @@ npm run dev:web               # Web на 3000
 - Заполните `.env` (DATABASE_URL, JWT_SECRET, NEXT_PUBLIC_API_BASE_URL, PORT для api/web при необходимости).
 - Соберите образы или запустите `docker-compose up -d db` и затем `npm run build --workspace api && npm run build --workspace web`.
 - Выполните миграции/сид: `npx prisma migrate deploy`, при необходимости `npx prisma db seed`, `npm run import:refs --workspace api ...`, `npm run import:players --workspace api ...`.
+- Демо-логины для прод/стейдж: `npm run seed:demo --workspace api` или `SEED_DEMO_USERS=true` при старте API (идемпотентно).
 - Запустите API (`node dist/main.js` из `apps/api`) и Web (`next start` из `apps/web`) за reverse-proxy/SSL.
 
 ## Vercel (фронтенд)

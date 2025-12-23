@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 const roles = [
   { value: "player", label: "Я игрок" },
   { value: "parent", label: "Я родитель" },
-  { value: "scout", label: "Я скаут/клуб" },
-  { value: "agent", label: "Я агент" }
+  { value: "scout", label: "Я скаут" },
+  { value: "club", label: "Я клуб" }
 ];
 
 export default function RegisterPage() {

@@ -3,9 +3,11 @@ import { NotificationsService } from "./notifications.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { Roles } from "../common/decorators/roles.decorator";
 
 @Controller("notifications")
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 

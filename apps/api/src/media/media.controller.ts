@@ -2,9 +2,12 @@ import { Body, Controller, Delete, Param, Post, Put, UseGuards } from "@nestjs/c
 import { MediaService } from "./media.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
+import { RolesGuard } from "../common/guards/roles.guard";
+import { Roles } from "../common/decorators/roles.decorator";
 
 @Controller("media")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles("PLAYER", "PARENT", "ADMIN")
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 

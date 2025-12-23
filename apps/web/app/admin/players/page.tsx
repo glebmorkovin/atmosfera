@@ -63,7 +63,7 @@ export default function AdminPlayersPage() {
           {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           {actionMessage && <p className="text-sm text-emerald-300">{actionMessage}</p>}
         </div>
-        <Link href="/admin" className="ghost-btn">
+        <Link href="/admin/dashboard" className="ghost-btn">
           Назад
         </Link>
       </div>
