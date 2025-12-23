@@ -17,6 +17,12 @@ if (typeof window !== "undefined") {
   refreshToken = localStorage.getItem("refreshToken");
 }
 
+const syncTokens = () => {
+  if (typeof window === "undefined") return;
+  accessToken = localStorage.getItem("accessToken");
+  refreshToken = localStorage.getItem("refreshToken");
+};
+
 const setTokens = (access?: string, refresh?: string) => {
   if (typeof window === "undefined") return;
   if (access) {
@@ -37,6 +43,7 @@ const clearTokens = () => {
 };
 
 async function refreshTokens() {
+  syncTokens();
   if (!refreshToken) throw new Error("No refresh token");
   const res = await fetch(`${API_BASE}/auth/refresh`, {
     method: "POST",
@@ -53,6 +60,7 @@ async function refreshTokens() {
 }
 
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+  syncTokens();
   const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
   const headers: Record<string, string> = { "Content-Type": "application/json", ...(options.headers || {}) };
   if (options.auth && accessToken) {
