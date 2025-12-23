@@ -1,9 +1,21 @@
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
+import { Logger, ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
+import { PrismaService } from "./prisma/prisma.service";
+import { seedDemoUsers } from "./seed-demo";
 
 async function bootstrap() {
+  const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
+  if (process.env.SEED_DEMO_USERS === "true") {
+    try {
+      const prisma = app.get(PrismaService);
+      await seedDemoUsers(prisma);
+      logger.log("Demo users ensured");
+    } catch (err) {
+      logger.error("Failed to seed demo users", err instanceof Error ? err.stack : undefined);
+    }
+  }
   const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000")
     .split(",")
     .map((origin) => origin.trim())

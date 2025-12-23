@@ -6,7 +6,9 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "build": "nest build",
+    "start:prod": "node dist/main.js",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "seed:demo": "node dist/seed-demo.js",
     "import:refs": "ts-node --transpile-only scripts/import-refs.ts",
     "import:players": "ts-node --transpile-only scripts/import-players.ts"
   },

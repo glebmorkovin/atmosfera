@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import * as bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -16,6 +16,7 @@ type CreateUserPayload = {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async demoList() {
@@ -56,10 +57,15 @@ export class UsersService {
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user || !user.isActive) return null;
-    const ok = await bcrypt.compare(password, user.passwordHash);
-    return ok ? user : null;
+    try {
+      const user = await this.prisma.user.findUnique({ where: { email } });
+      if (!user || !user.isActive || !user.passwordHash) return null;
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      return ok ? user : null;
+    } catch (err) {
+      this.logger.error(`validateUser failed for ${email}`, err instanceof Error ? err.stack : undefined);
+      throw err;
+    }
   }
 
   async updatePassword(userId: string, newPassword: string) {
