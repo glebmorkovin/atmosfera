@@ -6,6 +6,8 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "build": "nest build",
+    "start:prod": "node dist/main.js",
+    "migrate:deploy": "prisma migrate deploy --schema ../../prisma/schema.prisma",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "import:refs": "ts-node --transpile-only scripts/import-refs.ts",
     "import:players": "ts-node --transpile-only scripts/import-players.ts"
@@ -23,6 +25,7 @@
     "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
+    "prisma": "^5.16.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
   },
@@ -38,7 +41,6 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "prettier": "^3.3.3",
-    "prisma": "^5.16.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.4"

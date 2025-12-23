@@ -33,6 +33,10 @@ npm run dev:web               # Web на 3000
 - Выполните миграции/сид: `npx prisma migrate deploy`, при необходимости `npx prisma db seed`, `npm run import:refs --workspace api ...`, `npm run import:players --workspace api ...`.
 - Запустите API (`node dist/main.js` из `apps/api`) и Web (`next start` из `apps/web`) за reverse-proxy/SSL.
 
+## Render (API)
+- Build Command: `npm run build --workspace api`
+- Start Command: `npm run migrate:deploy --workspace api && npm run start:prod --workspace api`
+
 ## Vercel (фронтенд)
 - В корне добавлен `vercel.json`, который собирает Next.js из `apps/web` через `@vercel/next` (root проекта можно не менять в настройках Vercel).
 - Перед деплоем задайте переменные: `NEXT_PUBLIC_API_BASE_URL=https://<ваш-api>/api` для фронта и `CORS_ORIGINS=https://<your-app>.vercel.app,...` для API.
