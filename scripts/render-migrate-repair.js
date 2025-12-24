@@ -1,5 +1,3 @@
-const { PrismaClient } = require("@prisma/client");
-
 const isRender = Boolean(
   process.env.RENDER ||
     process.env.RENDER_SERVICE_ID ||
@@ -8,6 +6,18 @@ const isRender = Boolean(
 );
 
 if (!isRender) {
+  process.exit(0);
+}
+
+let PrismaClient;
+try {
+  // Lazy-load to avoid failing installs on environments without prisma deps (e.g. Vercel web builds).
+  ({ PrismaClient } = require("@prisma/client"));
+} catch (err) {
+  // eslint-disable-next-line no-console
+  console.log(
+    `[render-migrate-repair] skip: unable to load @prisma/client (${err && err.message ? err.message : "unknown error"})`
+  );
   process.exit(0);
 }
 
