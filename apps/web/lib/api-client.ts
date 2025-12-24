@@ -7,7 +7,7 @@ type FetchOptions = {
   auth?: boolean;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://atmosfera-api.onrender.com/api";
 
 let accessToken: string | null = null;
 let refreshToken: string | null = null;

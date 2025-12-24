@@ -74,19 +74,13 @@ export default function PlayerProfilePage() {
     setError(null);
     setMessage(null);
     try {
-      const search = await apiFetch<{ data: PlayerProfile[] }>("/players/search?pageSize=1", { auth: true });
-      const first = search.data?.[0];
-      if (first) {
-        const full = await apiFetch<PlayerProfile>(`/players/${first.id}`, { auth: true });
-        setProfile({
-          ...full,
-          agentCard: ensureAgentCard(full.agentCard)
-        });
-        setHistories(full.clubHistory || []);
-        setAchievements(full.achievements || []);
-      } else {
-        setError("Профиль игрока не найден. Создайте и заполните профиль.");
-      }
+      const full = await apiFetch<PlayerProfile>("/players/me", { auth: true });
+      setProfile({
+        ...full,
+        agentCard: ensureAgentCard(full.agentCard)
+      });
+      setHistories(full.clubHistory || []);
+      setAchievements(full.achievements || []);
     } catch {
       setError("Не удалось загрузить профиль (нужен вход и запущенный API)");
     } finally {
@@ -111,6 +105,7 @@ export default function PlayerProfilePage() {
       }
     };
     loadRefs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateField = (key: keyof PlayerProfile, value: any) => {

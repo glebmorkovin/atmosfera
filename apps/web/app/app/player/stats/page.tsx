@@ -51,23 +51,17 @@ export default function PlayerStatsPage() {
     setError(null);
     setMessage(null);
     try {
-      const search = await apiFetch<{ data: Player[] }>("/players/search?pageSize=1", { auth: true });
-      const first = search.data?.[0];
-      if (first) {
-        const full = await apiFetch<Player>(`/players/${first.id}`, { auth: true });
-        setPlayer(full);
-        setStats(full.statLines || []);
-        const [seasonsRes, leaguesRes, clubsRes] = await Promise.all([
-          apiFetch<RefOption[]>("/refs/seasons", { auth: true }),
-          apiFetch<RefOption[]>("/refs/leagues", { auth: true }),
-          apiFetch<RefOption[]>("/refs/clubs", { auth: true })
-        ]);
-        setSeasons(seasonsRes);
-        setLeagues(leaguesRes);
-        setClubs(clubsRes);
-      } else {
-        setError("Профиль игрока не найден");
-      }
+      const full = await apiFetch<Player>("/players/me", { auth: true });
+      setPlayer(full);
+      setStats(full.statLines || []);
+      const [seasonsRes, leaguesRes, clubsRes] = await Promise.all([
+        apiFetch<RefOption[]>("/refs/seasons", { auth: true }),
+        apiFetch<RefOption[]>("/refs/leagues", { auth: true }),
+        apiFetch<RefOption[]>("/refs/clubs", { auth: true })
+      ]);
+      setSeasons(seasonsRes);
+      setLeagues(leaguesRes);
+      setClubs(clubsRes);
     } catch {
       setError("Не удалось загрузить данные (нужен вход и запущенный API)");
     } finally {

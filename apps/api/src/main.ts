@@ -16,7 +16,7 @@ async function bootstrap() {
       logger.error("Failed to seed demo users", err instanceof Error ? err.stack : undefined);
     }
   }
-  const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000")
+  const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000,https://*.vercel.app")
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);

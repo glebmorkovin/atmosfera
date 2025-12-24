@@ -1,12 +1,110 @@
-import { EmptyState } from "@/components/empty-state";
+"use client";
+
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api-client";
+
+const statusLabels: Record<string, string> = {
+  PENDING: "Ожидает ответа",
+  ACCEPTED: "Принято",
+  DECLINED: "Отклонено",
+  CANCELLED: "Отменено",
+  EXPIRED: "Истекло"
+};
+
+type RequestItem = {
+  id: string;
+  message?: string | null;
+  status: string;
+  createdAt: string;
+  initiatorUser?: { id: string; firstName: string; lastName: string; role: string } | null;
+  player?: { id: string; firstName: string; lastName: string } | null;
+};
 
 export default function ParentRequestsPage() {
+  const [items, setItems] = useState<RequestItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await apiFetch<RequestItem[]>("/engagement-requests/inbox", { auth: true });
+      setItems(data);
+    } catch {
+      setError("Не удалось загрузить входящие запросы");
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const act = async (id: string, action: "accept" | "decline") => {
+    setError(null);
+    setMessage(null);
+    try {
+      await apiFetch(`/engagement-requests/${id}/${action}`, { method: "POST", auth: true });
+      setMessage(action === "accept" ? "Запрос принят" : "Запрос отклонён");
+      load();
+    } catch {
+      setError("Не удалось обновить запрос");
+    }
+  };
+
   return (
-    <EmptyState
-      title="Входящие запросы"
-      description="Запросов пока нет. Новые обращения от скаутов и клубов появятся здесь."
-      actionHref="/app/parent/children"
-      actionLabel="Перейти к профилям детей"
-    />
+    <main className="min-h-screen bg-secondary">
+      <div className="container space-y-8 py-12">
+        <div>
+          <p className="pill mb-2">Родитель • Запросы</p>
+          <h1 className="text-3xl font-bold">Входящие запросы</h1>
+          <p className="text-white/70">Запросы по профилям ваших детей.</p>
+          {error && <p className="text-sm text-amber-300">{error}</p>}
+          {message && <p className="text-sm text-emerald-300">{message}</p>}
+          {loading && <p className="text-sm text-white/60">Загрузка...</p>}
+        </div>
+
+        {items.length === 0 && !loading && (
+          <div className="card text-white/70">Запросов пока нет. Новые обращения появятся здесь.</div>
+        )}
+
+        <div className="grid gap-4">
+          {items.map((req) => (
+            <div key={req.id} className="card space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-white/60">Игрок</p>
+                  <p className="text-lg font-semibold">
+                    {req.player?.firstName} {req.player?.lastName}
+                  </p>
+                </div>
+                <span className="pill">{statusLabels[req.status] || req.status}</span>
+              </div>
+              <div>
+                <p className="text-sm text-white/60">Инициатор</p>
+                <p className="text-white/80">
+                  {req.initiatorUser?.firstName} {req.initiatorUser?.lastName} ({req.initiatorUser?.role})
+                </p>
+              </div>
+              {req.message && <p className="text-white/80">{req.message}</p>}
+              {req.status === "PENDING" && (
+                <div className="flex gap-3">
+                  <button className="primary-btn px-4 py-2 text-sm" onClick={() => act(req.id, "accept")}>
+                    Принять
+                  </button>
+                  <button className="ghost-btn px-4 py-2 text-sm" onClick={() => act(req.id, "decline")}>
+                    Отклонить
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </main>
   );
 }

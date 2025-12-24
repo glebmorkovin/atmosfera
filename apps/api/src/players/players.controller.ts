@@ -34,6 +34,12 @@ export class PlayersController {
     return this.playersService.list({ position, league, minAge, maxAge, hasVideo });
   }
 
+  @Get("me")
+  @Roles("PLAYER")
+  getMe(@CurrentUser() user: any) {
+    return this.playersService.getSelf(user);
+  }
+
   @Get(":id")
   @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
   getPlayer(@Param("id") id: string, @CurrentUser() user: any) {

@@ -27,15 +27,9 @@ export default function PlayerMediaPage() {
     setError(null);
     setMessage(null);
     try {
-      const search = await apiFetch<{ data: any[] }>("/players/search?pageSize=1", { auth: true });
-      const first = search.data?.[0];
-      if (first) {
-        setPlayerId(first.id);
-        const full = await apiFetch<any>(`/players/${first.id}`, { auth: true });
-        setMedia(full.media || []);
-      } else {
-        setError("Профиль не найден");
-      }
+      const full = await apiFetch<any>("/players/me", { auth: true });
+      setPlayerId(full.id);
+      setMedia(full.media || []);
     } catch {
       setError("Не удалось загрузить медиа (нужен вход и API)");
     } finally {

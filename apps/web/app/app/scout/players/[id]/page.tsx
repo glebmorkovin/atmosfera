@@ -85,6 +85,7 @@ export default function ScoutPlayerProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [shortlistId, setShortlistId] = useState("");
+  const [requestMessage, setRequestMessage] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   const load = async () => {
@@ -134,6 +135,21 @@ export default function ScoutPlayerProfilePage() {
       setMessage("Заметка сохранена");
     } catch {
       setError("Не удалось сохранить заметку");
+    }
+  };
+
+  const sendRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!playerId) return;
+    setError(null);
+    setMessage(null);
+    try {
+      await apiFetch("/engagement-requests", { method: "POST", body: { playerId, message: requestMessage }, auth: true });
+      setMessage("Запрос отправлен");
+      setRequestMessage("");
+    } catch (err) {
+      const text = err instanceof Error ? err.message : "";
+      setError(text.includes("409") || text.toLowerCase().includes("уже") ? "Запрос уже отправлен" : "Не удалось отправить запрос");
     }
   };
 
@@ -199,7 +215,19 @@ export default function ScoutPlayerProfilePage() {
                     Добавить
                   </button>
                 </form>
-                <form className="space-y-3" onSubmit={addNote}>
+                <form className="space-y-3 border-t border-white/10 pt-3" onSubmit={sendRequest}>
+                  <p className="text-white/80">Запрос на сотрудничество</p>
+                  <textarea
+                    className="input h-24"
+                    value={requestMessage}
+                    placeholder="Сообщение игроку (опционально)"
+                    onChange={(e) => setRequestMessage(e.target.value)}
+                  />
+                  <button className="primary-btn w-full py-2 text-sm" type="submit">
+                    Отправить запрос
+                  </button>
+                </form>
+                <form className="space-y-3 border-t border-white/10 pt-3" onSubmit={addNote}>
                   <p className="text-white/80">Заметка по игроку</p>
                   <textarea
                     className="input h-24"

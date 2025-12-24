@@ -14,6 +14,7 @@ import { NotesModule } from "./notes/notes.module";
 import { AdminModule } from "./admin/admin.module";
 import { MediaModule } from "./media/media.module";
 import { RefsModule } from "./refs/refs.module";
+import { EngagementRequestsModule } from "./engagement-requests/engagement-requests.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RefsModule } from "./refs/refs.module";
     NotificationsModule,
     ProfileViewsModule,
     NotesModule,
+    EngagementRequestsModule,
     AdminModule,
     MediaModule,
     RefsModule

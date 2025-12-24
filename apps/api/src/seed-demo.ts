@@ -1,4 +1,4 @@
-import { PrismaClient, ModerationStatus, Position, UserRole } from "@prisma/client";
+import { EngagementRequestStatus, PrismaClient, ModerationStatus, Position, UserRole } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 const DEMO_PASSWORD = "password123";
@@ -27,7 +27,7 @@ export async function seedDemoUsers(prisma: PrismaClient) {
     }
   });
 
-  await prisma.user.upsert({
+  const scoutUser = await prisma.user.upsert({
     where: { email: "scout@example.com" },
     update: {
       passwordHash,
@@ -45,6 +45,48 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       lastName: "Скаут",
       country: "Россия",
       city: "Москва"
+    }
+  });
+
+  const clubUser = await prisma.user.upsert({
+    where: { email: "club@example.com" },
+    update: {
+      passwordHash,
+      role: UserRole.CLUB,
+      firstName: "Клуб",
+      lastName: "Пример",
+      country: "Россия",
+      city: "Москва"
+    },
+    create: {
+      email: "club@example.com",
+      passwordHash,
+      role: UserRole.CLUB,
+      firstName: "Клуб",
+      lastName: "Пример",
+      country: "Россия",
+      city: "Москва"
+    }
+  });
+
+  const parentUser = await prisma.user.upsert({
+    where: { email: "parent@example.com" },
+    update: {
+      passwordHash,
+      role: UserRole.PARENT,
+      firstName: "Ольга",
+      lastName: "К.",
+      country: "Россия",
+      city: "Санкт-Петербург"
+    },
+    create: {
+      email: "parent@example.com",
+      passwordHash,
+      role: UserRole.PARENT,
+      firstName: "Ольга",
+      lastName: "К.",
+      country: "Россия",
+      city: "Санкт-Петербург"
     }
   });
 
@@ -104,6 +146,25 @@ export async function seedDemoUsers(prisma: PrismaClient) {
     }
   });
 
+  const parentProfile = await prisma.parentProfile.upsert({
+    where: { userId: parentUser.id },
+    update: { contactInfo: "Мама игрока, готова к диалогу по карьерным вопросам" },
+    create: {
+      userId: parentUser.id,
+      contactInfo: "Мама игрока, готова к диалогу по карьерным вопросам"
+    }
+  });
+
+  await prisma.playerParent.upsert({
+    where: { playerId_parentId: { playerId: playerProfile.id, parentId: parentProfile.id } },
+    update: {},
+    create: {
+      playerId: playerProfile.id,
+      parentId: parentProfile.id,
+      relationType: "mother"
+    }
+  });
+
   await prisma.agentCard.upsert({
     where: { playerId: playerProfile.id },
     update: {
@@ -126,6 +187,43 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       contractVisibleAfterEngagement: true
     }
   });
+
+  const pendingScout = await prisma.engagementRequest.findFirst({
+    where: {
+      initiatorUserId: scoutUser.id,
+      playerId: playerProfile.id,
+      status: EngagementRequestStatus.PENDING
+    }
+  });
+  if (!pendingScout) {
+    await prisma.engagementRequest.create({
+      data: {
+        initiatorUserId: scoutUser.id,
+        playerId: playerProfile.id,
+        status: EngagementRequestStatus.PENDING,
+        message: "Здравствуйте! Хотим обсудить сотрудничество."
+      }
+    });
+  }
+
+  const acceptedClub = await prisma.engagementRequest.findFirst({
+    where: {
+      initiatorUserId: clubUser.id,
+      playerId: playerProfile.id,
+      status: EngagementRequestStatus.ACCEPTED
+    }
+  });
+  if (!acceptedClub) {
+    await prisma.engagementRequest.create({
+      data: {
+        initiatorUserId: clubUser.id,
+        playerId: playerProfile.id,
+        status: EngagementRequestStatus.ACCEPTED,
+        message: "Клуб интересуется игроком, готовы обсудить условия.",
+        respondedAt: new Date()
+      }
+    });
+  }
 }
 
 async function run() {

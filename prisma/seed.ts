@@ -1,4 +1,12 @@
-import { PrismaClient, UserRole, Position, ModerationStatus, MediaStatus, NotificationType } from "@prisma/client";
+import {
+  EngagementRequestStatus,
+  PrismaClient,
+  UserRole,
+  Position,
+  ModerationStatus,
+  MediaStatus,
+  NotificationType
+} from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
@@ -99,6 +107,20 @@ async function main() {
     }
   });
 
+  const clubUser = await prisma.user.upsert({
+    where: { email: "club@example.com" },
+    update: {},
+    create: {
+      email: "club@example.com",
+      passwordHash,
+      role: UserRole.CLUB,
+      firstName: "Клуб",
+      lastName: "Пример",
+      country: "Россия",
+      city: "Москва"
+    }
+  });
+
   await prisma.user.upsert({
     where: { email: "admin@example.com" },
     update: {},
@@ -183,6 +205,43 @@ async function main() {
       relationType: "mother"
     }
   });
+
+  const pendingScout = await prisma.engagementRequest.findFirst({
+    where: {
+      initiatorUserId: scoutUser.id,
+      playerId: playerProfile.id,
+      status: EngagementRequestStatus.PENDING
+    }
+  });
+  if (!pendingScout) {
+    await prisma.engagementRequest.create({
+      data: {
+        initiatorUserId: scoutUser.id,
+        playerId: playerProfile.id,
+        status: EngagementRequestStatus.PENDING,
+        message: "Здравствуйте! Хотим обсудить сотрудничество."
+      }
+    });
+  }
+
+  const acceptedClub = await prisma.engagementRequest.findFirst({
+    where: {
+      initiatorUserId: clubUser.id,
+      playerId: playerProfile.id,
+      status: EngagementRequestStatus.ACCEPTED
+    }
+  });
+  if (!acceptedClub) {
+    await prisma.engagementRequest.create({
+      data: {
+        initiatorUserId: clubUser.id,
+        playerId: playerProfile.id,
+        status: EngagementRequestStatus.ACCEPTED,
+        message: "Клуб интересуется игроком, готовы обсудить условия.",
+        respondedAt: new Date()
+      }
+    });
+  }
 
   // Stats
   await prisma.playerStatLine.createMany({
