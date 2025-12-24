@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { MediaStatus, NotificationType, UserRole } from "@prisma/client";
+import { EngagementRequestStatus, MediaStatus, NotificationType, UserRole } from "@prisma/client";
 import { NotificationsService } from "../notifications/notifications.service";
 
 type ListFilters = Partial<{
@@ -115,6 +115,12 @@ export class PlayersService {
     }
     const agentCard = await this.sanitizeAgentCard(player.agentCard, player, user);
     return { ...player, agentCard };
+  }
+
+  async getSelf(user: { id: string; role: UserRole }) {
+    const player = await this.prisma.player.findUnique({ where: { userId: user.id } });
+    if (!player) throw new NotFoundException("Player not found");
+    return this.getById(player.id, user);
   }
 
   async search(filters: SearchFilters, pagination: Pagination, user?: { id: string; role: UserRole }) {
@@ -328,10 +334,23 @@ export class PlayersService {
       if (isParent) return agentCard;
     }
     if (user.role === UserRole.SCOUT || user.role === UserRole.CLUB) {
+      const needsEngagement =
+        agentCard.contactsVisibleAfterEngagement || agentCard.contractVisibleAfterEngagement;
+      let hasEngagement = false;
+      if (needsEngagement) {
+        const existing = await this.prisma.engagementRequest.findFirst({
+          where: {
+            initiatorUserId: user.id,
+            playerId: player.id,
+            status: EngagementRequestStatus.ACCEPTED
+          }
+        });
+        hasEngagement = Boolean(existing);
+      }
       return {
         ...agentCard,
-        contactsText: agentCard.contactsVisibleAfterEngagement ? null : agentCard.contactsText,
-        contractStatusText: agentCard.contractVisibleAfterEngagement ? null : agentCard.contractStatusText
+        contactsText: agentCard.contactsVisibleAfterEngagement && !hasEngagement ? null : agentCard.contactsText,
+        contractStatusText: agentCard.contractVisibleAfterEngagement && !hasEngagement ? null : agentCard.contractStatusText
       };
     }
     return agentCard;

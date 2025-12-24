@@ -44,18 +44,12 @@ export default function PlayerDashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const search = await apiFetch<{ data: Player[] }>("/players/search?pageSize=1", { auth: true });
-      const first = search.data?.[0];
-      if (first) {
-        const full = await apiFetch<Player>(`/players/${first.id}`, { auth: true });
-        setPlayer(full);
-        const stats = await apiFetch<{ total: number; buckets: ViewsBucket[] }>(`/profile-views/${first.id}/stats?days=${period}`, {
-          auth: true
-        });
-        setViews(stats.buckets || []);
-      } else {
-        setError("Профиль игрока не найден. Заполните профиль и попробуйте снова.");
-      }
+      const full = await apiFetch<Player>("/players/me", { auth: true });
+      setPlayer(full);
+      const stats = await apiFetch<{ total: number; buckets: ViewsBucket[] }>(`/profile-views/${full.id}/stats?days=${period}`, {
+        auth: true
+      });
+      setViews(stats.buckets || []);
     } catch (err) {
       setError("Не удалось загрузить данные профиля (нужен вход и запущенный API)");
     } finally {

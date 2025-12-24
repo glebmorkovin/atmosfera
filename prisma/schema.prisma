@@ -41,6 +41,14 @@ enum NotificationType {
   SYSTEM
 }
 
+enum EngagementRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+  EXPIRED
+}
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
@@ -66,6 +74,7 @@ model User {
   notificationsFeed Notification[]
   auditLogs   AuditLog[]
   viewedProfiles ProfileViewEvent[] @relation("ViewerEvents")
+  engagementRequests EngagementRequest[] @relation("EngagementInitiator")
 
   @@index([role])
 }
@@ -114,12 +123,31 @@ model Player {
   notes            Note[]
   profileViews     ProfileViewEvent[]
   agentCard        AgentCard?
+  engagementRequests EngagementRequest[]
 
   @@index([position])
   @@index([dateOfBirth])
   @@index([currentLeagueId])
   @@index([currentClubId])
   @@index([isPublicInSearch])
+}
+
+model EngagementRequest {
+  id              String   @id @default(cuid())
+  initiatorUserId String
+  playerId        String
+  message         String?  @db.Text
+  status          EngagementRequestStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  respondedAt     DateTime?
+
+  initiatorUser   User   @relation("EngagementInitiator", fields: [initiatorUserId], references: [id])
+  player          Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId])
+  @@index([initiatorUserId])
+  @@index([status])
 }
 
 model AgentCard {
