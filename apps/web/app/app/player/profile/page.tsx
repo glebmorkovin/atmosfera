@@ -20,8 +20,19 @@ type PlayerProfile = {
   contactPhone?: string | null;
   isPublicInSearch: boolean;
   showContactsToScoutsOnly: boolean;
+  agentCard?: AgentCard | null;
   clubHistory?: PlayerHistory[];
   achievements?: PlayerAchievement[];
+};
+
+type AgentCard = {
+  cooperationUntil?: string | null;
+  potentialText?: string | null;
+  skillsText?: string | null;
+  contractStatusText?: string | null;
+  contactsText?: string | null;
+  contactsVisibleAfterEngagement: boolean;
+  contractVisibleAfterEngagement: boolean;
 };
 
 type PlayerHistory = {
@@ -67,7 +78,10 @@ export default function PlayerProfilePage() {
       const first = search.data?.[0];
       if (first) {
         const full = await apiFetch<PlayerProfile>(`/players/${first.id}`, { auth: true });
-        setProfile(full);
+        setProfile({
+          ...full,
+          agentCard: ensureAgentCard(full.agentCard)
+        });
         setHistories(full.clubHistory || []);
         setAchievements(full.achievements || []);
       } else {
@@ -101,6 +115,27 @@ export default function PlayerProfilePage() {
 
   const updateField = (key: keyof PlayerProfile, value: any) => {
     setProfile((prev) => (prev ? { ...prev, [key]: value } : prev));
+  };
+
+  const ensureAgentCard = (card?: AgentCard | null): AgentCard => ({
+    cooperationUntil: card?.cooperationUntil ?? "",
+    potentialText: card?.potentialText ?? "",
+    skillsText: card?.skillsText ?? "",
+    contractStatusText: card?.contractStatusText ?? "",
+    contactsText: card?.contactsText ?? "",
+    contactsVisibleAfterEngagement: card?.contactsVisibleAfterEngagement ?? false,
+    contractVisibleAfterEngagement: card?.contractVisibleAfterEngagement ?? false
+  });
+
+  const updateAgentCard = (key: keyof AgentCard, value: any) => {
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            agentCard: { ...ensureAgentCard(prev.agentCard), [key]: value }
+          }
+        : prev
+    );
   };
 
   const save = async (e: React.FormEvent) => {
@@ -314,6 +349,80 @@ export default function PlayerProfilePage() {
                   onChange={(e) => updateField("bioText", e.target.value)}
                 />
               </label>
+            </div>
+
+            <div className="card space-y-4">
+              <div>
+                <p className="pill mb-2">Агентская карточка</p>
+                <h2 className="text-xl font-semibold">Данные агентства</h2>
+                <p className="text-sm text-white/70">Заполняется игроком или родителем. Для скаутов/клубов часть полей может быть скрыта.</p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1 text-sm text-white/80">
+                  <span>Сотрудничество (до/период)</span>
+                  <input
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                    value={profile.agentCard?.cooperationUntil || ""}
+                    onChange={(e) => updateAgentCard("cooperationUntil", e.target.value)}
+                    placeholder="Напр. до 2026"
+                  />
+                </label>
+                <label className="space-y-1 text-sm text-white/80">
+                  <span>Контактные данные</span>
+                  <input
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                    value={profile.agentCard?.contactsText || ""}
+                    onChange={(e) => updateAgentCard("contactsText", e.target.value)}
+                    placeholder="Телефон, email, мессенджеры"
+                  />
+                </label>
+                <label className="space-y-1 text-sm text-white/80 md:col-span-2">
+                  <span>Потенциал</span>
+                  <textarea
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                    rows={3}
+                    value={profile.agentCard?.potentialText || ""}
+                    onChange={(e) => updateAgentCard("potentialText", e.target.value)}
+                  />
+                </label>
+                <label className="space-y-1 text-sm text-white/80 md:col-span-2">
+                  <span>Скиллы</span>
+                  <textarea
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                    rows={3}
+                    value={profile.agentCard?.skillsText || ""}
+                    onChange={(e) => updateAgentCard("skillsText", e.target.value)}
+                  />
+                </label>
+                <label className="space-y-1 text-sm text-white/80 md:col-span-2">
+                  <span>Состояние контракта</span>
+                  <textarea
+                    className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm"
+                    rows={2}
+                    value={profile.agentCard?.contractStatusText || ""}
+                    onChange={(e) => updateAgentCard("contractStatusText", e.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <label className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+                  <input
+                    type="checkbox"
+                    checked={profile.agentCard?.contactsVisibleAfterEngagement ?? false}
+                    onChange={(e) => updateAgentCard("contactsVisibleAfterEngagement", e.target.checked)}
+                  />
+                  Показывать контакты только после подтверждённого сотрудничества
+                </label>
+                <label className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+                  <input
+                    type="checkbox"
+                    checked={profile.agentCard?.contractVisibleAfterEngagement ?? false}
+                    onChange={(e) => updateAgentCard("contractVisibleAfterEngagement", e.target.checked)}
+                  />
+                  Показывать контракт только после подтверждённого сотрудничества
+                </label>
+              </div>
             </div>
 
             <div className="card space-y-3">

@@ -141,6 +141,29 @@ async function main() {
     }
   });
 
+  await prisma.agentCard.upsert({
+    where: { playerId: playerProfile.id },
+    update: {
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      contactsVisibleAfterEngagement: true,
+      contractVisibleAfterEngagement: true
+    },
+    create: {
+      playerId: playerProfile.id,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      contactsVisibleAfterEngagement: true,
+      contractVisibleAfterEngagement: true
+    }
+  });
+
   // Parent profile + link to player
   const parentProfile = await prisma.parentProfile.upsert({
     where: { userId: parentUser.id },

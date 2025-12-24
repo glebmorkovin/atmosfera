@@ -77,7 +77,7 @@ type Player = {
   agentCard?: AgentCard | null;
 };
 
-export default function ScoutPlayerProfilePage() {
+export default function ClubPlayerProfilePage() {
   const params = useParams();
   const playerId = params?.id as string;
   const [player, setPlayer] = useState<Player | null>(null);
@@ -95,7 +95,6 @@ export default function ScoutPlayerProfilePage() {
     try {
       const data = await apiFetch<Player>(`/players/${playerId}`, { auth: true });
       setPlayer(data);
-      // зафиксировать просмотр
       apiFetch(`/players/${playerId}/view`, { method: "POST", auth: true }).catch(() => null);
     } catch {
       setError("Не удалось загрузить профиль (нужен вход и запущенный API)");
@@ -155,7 +154,7 @@ export default function ScoutPlayerProfilePage() {
       <div className="container space-y-8 py-12">
         <div className="flex items-center justify-between">
           <div>
-            <p className="pill mb-2">Скаут • Профиль игрока</p>
+            <p className="pill mb-2">Клуб • Профиль игрока</p>
             <h1 className="text-3xl font-bold">Просмотр игрока</h1>
             {player && (
               <p className="text-white/70">
@@ -166,7 +165,7 @@ export default function ScoutPlayerProfilePage() {
             {message && <p className="text-sm text-emerald-300">{message}</p>}
             {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
-          <Link href="/app/scout/search" className="ghost-btn">
+          <Link href="/app/club/search" className="ghost-btn">
             Назад к поиску
           </Link>
         </div>

@@ -92,6 +92,7 @@ export class PlayersService {
       include: {
         currentClub: true,
         currentLeague: true,
+        agentCard: true,
         media: {
           where: { status: MediaStatus.APPROVED },
           orderBy: { createdAt: "desc" }
@@ -112,7 +113,8 @@ export class PlayersService {
       const isParent = await this.isParentOfPlayer(player.id, user.id);
       if (!isParent) throw new ForbiddenException("Нет доступа");
     }
-    return player;
+    const agentCard = await this.sanitizeAgentCard(player.agentCard, player, user);
+    return { ...player, agentCard };
   }
 
   async search(filters: SearchFilters, pagination: Pagination, user?: { id: string; role: UserRole }) {
@@ -266,6 +268,31 @@ export class PlayersService {
       isPublicInSearch: payload.isPublicInSearch,
       showContactsToScoutsOnly: payload.showContactsToScoutsOnly
     };
+    if (payload.agentCard) {
+      const agentCard = payload.agentCard;
+      await this.prisma.agentCard.upsert({
+        where: { playerId },
+        update: {
+          cooperationUntil: agentCard.cooperationUntil ?? null,
+          potentialText: agentCard.potentialText ?? null,
+          skillsText: agentCard.skillsText ?? null,
+          contractStatusText: agentCard.contractStatusText ?? null,
+          contactsText: agentCard.contactsText ?? null,
+          contactsVisibleAfterEngagement: Boolean(agentCard.contactsVisibleAfterEngagement),
+          contractVisibleAfterEngagement: Boolean(agentCard.contractVisibleAfterEngagement)
+        },
+        create: {
+          playerId,
+          cooperationUntil: agentCard.cooperationUntil ?? null,
+          potentialText: agentCard.potentialText ?? null,
+          skillsText: agentCard.skillsText ?? null,
+          contractStatusText: agentCard.contractStatusText ?? null,
+          contactsText: agentCard.contactsText ?? null,
+          contactsVisibleAfterEngagement: Boolean(agentCard.contactsVisibleAfterEngagement),
+          contractVisibleAfterEngagement: Boolean(agentCard.contractVisibleAfterEngagement)
+        }
+      });
+    }
     return this.prisma.player.update({ where: { id: playerId }, data });
   }
 
@@ -285,6 +312,29 @@ export class PlayersService {
       return this.isParentOfPlayer(player.id, user.id);
     }
     return false;
+  }
+
+  private async sanitizeAgentCard(
+    agentCard: any | null,
+    player: { id: string; userId: string },
+    user?: { id: string; role: UserRole }
+  ) {
+    if (!agentCard) return null;
+    if (!user) return agentCard;
+    if (user.role === UserRole.ADMIN) return agentCard;
+    if (user.role === UserRole.PLAYER && player.userId === user.id) return agentCard;
+    if (user.role === UserRole.PARENT) {
+      const isParent = await this.isParentOfPlayer(player.id, user.id);
+      if (isParent) return agentCard;
+    }
+    if (user.role === UserRole.SCOUT || user.role === UserRole.CLUB) {
+      return {
+        ...agentCard,
+        contactsText: agentCard.contactsVisibleAfterEngagement ? null : agentCard.contactsText,
+        contractStatusText: agentCard.contractVisibleAfterEngagement ? null : agentCard.contractStatusText
+      };
+    }
+    return agentCard;
   }
 
   async addStatLine(playerId: string, payload: any, user: { id: string; role: UserRole }) {
