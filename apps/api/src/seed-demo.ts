@@ -69,7 +69,7 @@ export async function seedDemoUsers(prisma: PrismaClient) {
     }
   });
 
-  await prisma.player.upsert({
+  const playerProfile = await prisma.player.upsert({
     where: { userId: playerUser.id },
     update: {
       firstName: "Алексей",
@@ -101,6 +101,29 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       contactPhone: "+7 900 000 00 00",
       moderationStatus: ModerationStatus.APPROVED,
       isActive: true
+    }
+  });
+
+  await prisma.agentCard.upsert({
+    where: { playerId: playerProfile.id },
+    update: {
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      contactsVisibleAfterEngagement: true,
+      contractVisibleAfterEngagement: true
+    },
+    create: {
+      playerId: playerProfile.id,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      contactsVisibleAfterEngagement: true,
+      contractVisibleAfterEngagement: true
     }
   });
 }
