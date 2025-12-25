@@ -15,6 +15,7 @@ import { AdminModule } from "./admin/admin.module";
 import { MediaModule } from "./media/media.module";
 import { RefsModule } from "./refs/refs.module";
 import { EngagementRequestsModule } from "./engagement-requests/engagement-requests.module";
+import { WorkingCardsModule } from "./working-cards/working-cards.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EngagementRequestsModule } from "./engagement-requests/engagement-reque
     ProfileViewsModule,
     NotesModule,
     EngagementRequestsModule,
+    WorkingCardsModule,
     AdminModule,
     MediaModule,
     RefsModule

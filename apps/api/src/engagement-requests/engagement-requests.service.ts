@@ -1,10 +1,11 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { EngagementRequestStatus, UserRole } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { WorkingCardsService } from "../working-cards/working-cards.service";
 
 @Injectable()
 export class EngagementRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly workingCardsService: WorkingCardsService) {}
 
   async createRequest(initiatorUserId: string, playerId: string, message?: string) {
     const player = await this.prisma.player.findUnique({ where: { id: playerId } });
@@ -83,20 +84,27 @@ export class EngagementRequestsService {
   async acceptRequest(id: string, user: { id: string; role: UserRole }) {
     const request = await this.prisma.engagementRequest.findUnique({
       where: { id },
-      include: { player: { select: { id: true, userId: true } } }
+      include: {
+        player: { select: { id: true, userId: true } },
+        initiatorUser: { select: { id: true, role: true } }
+      }
     });
     if (!request) throw new NotFoundException("Запрос не найден");
     await this.ensurePlayerAccess(request.player.id, request.player.userId, user);
     if (request.status !== EngagementRequestStatus.PENDING) {
       throw new ConflictException("Запрос уже обработан");
     }
-    return this.prisma.engagementRequest.update({
+    const updated = await this.prisma.engagementRequest.update({
       where: { id },
       data: {
         status: EngagementRequestStatus.ACCEPTED,
         respondedAt: new Date()
       }
     });
+    if (request.initiatorUser.role === UserRole.SCOUT || request.initiatorUser.role === UserRole.CLUB) {
+      await this.workingCardsService.ensureFromEngagement(request.initiatorUser.id, request.player.id);
+    }
+    return updated;
   }
 
   async declineRequest(id: string, user: { id: string; role: UserRole }) {

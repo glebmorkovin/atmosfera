@@ -49,6 +49,11 @@ enum EngagementRequestStatus {
   EXPIRED
 }
 
+enum WorkingCardSource {
+  FROM_PROFILE
+  MANUAL
+}
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
@@ -75,6 +80,7 @@ model User {
   auditLogs   AuditLog[]
   viewedProfiles ProfileViewEvent[] @relation("ViewerEvents")
   engagementRequests EngagementRequest[] @relation("EngagementInitiator")
+  workingCards WorkingCard[] @relation("WorkingCardOwner")
 
   @@index([role])
 }
@@ -124,6 +130,7 @@ model Player {
   profileViews     ProfileViewEvent[]
   agentCard        AgentCard?
   engagementRequests EngagementRequest[]
+  workingCards    WorkingCard[]
 
   @@index([position])
   @@index([dateOfBirth])
@@ -163,6 +170,37 @@ model AgentCard {
   contractVisibleAfterEngagement Boolean @default(false)
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt
+}
+
+model WorkingCard {
+  id              String   @id @default(cuid())
+  ownerUserId     String
+  playerId        String
+  source          WorkingCardSource @default(FROM_PROFILE)
+  fullName        String?
+  birthDate       DateTime?
+  cityText        String?
+  positionText    String?
+  cooperationUntil String?
+  potentialText   String?  @db.Text
+  skillsText      String?  @db.Text
+  contractStatusText String? @db.Text
+  contactsText    String?  @db.Text
+  clubText        String?
+  pipelineStatus  String?
+  notes           String?  @db.Text
+  tags            String[] @default([])
+  archivedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ownerUser User   @relation("WorkingCardOwner", fields: [ownerUserId], references: [id])
+  player    Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([ownerUserId, playerId])
+  @@index([ownerUserId])
+  @@index([playerId])
+  @@index([archivedAt])
 }
 
 model ParentProfile {

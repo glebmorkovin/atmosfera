@@ -5,7 +5,8 @@ import {
   Position,
   ModerationStatus,
   MediaStatus,
-  NotificationType
+  NotificationType,
+  WorkingCardSource
 } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
@@ -242,6 +243,41 @@ async function main() {
       }
     });
   }
+
+  await prisma.workingCard.upsert({
+    where: { ownerUserId_playerId: { ownerUserId: clubUser.id, playerId: playerProfile.id } },
+    update: {
+      fullName: `${playerProfile.firstName} ${playerProfile.lastName}`,
+      birthDate: playerProfile.dateOfBirth,
+      cityText: playerProfile.city,
+      positionText: playerProfile.position,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      clubText: clubSka1946.name,
+      pipelineStatus: "Контакт установлен",
+      tags: []
+    },
+    create: {
+      ownerUserId: clubUser.id,
+      playerId: playerProfile.id,
+      source: WorkingCardSource.FROM_PROFILE,
+      fullName: `${playerProfile.firstName} ${playerProfile.lastName}`,
+      birthDate: playerProfile.dateOfBirth,
+      cityText: playerProfile.city,
+      positionText: playerProfile.position,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      clubText: clubSka1946.name,
+      pipelineStatus: "Контакт установлен",
+      tags: []
+    }
+  });
 
   // Stats
   await prisma.playerStatLine.createMany({

@@ -1,4 +1,4 @@
-import { EngagementRequestStatus, PrismaClient, ModerationStatus, Position, UserRole } from "@prisma/client";
+import { EngagementRequestStatus, PrismaClient, ModerationStatus, Position, UserRole, WorkingCardSource } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 const DEMO_PASSWORD = "password123";
@@ -224,6 +224,39 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       }
     });
   }
+
+  await prisma.workingCard.upsert({
+    where: { ownerUserId_playerId: { ownerUserId: clubUser.id, playerId: playerProfile.id } },
+    update: {
+      fullName: `${playerProfile.firstName} ${playerProfile.lastName}`,
+      birthDate: playerProfile.dateOfBirth,
+      cityText: playerProfile.city,
+      positionText: playerProfile.position,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      pipelineStatus: "Контакт установлен",
+      tags: []
+    },
+    create: {
+      ownerUserId: clubUser.id,
+      playerId: playerProfile.id,
+      source: WorkingCardSource.FROM_PROFILE,
+      fullName: `${playerProfile.firstName} ${playerProfile.lastName}`,
+      birthDate: playerProfile.dateOfBirth,
+      cityText: playerProfile.city,
+      positionText: playerProfile.position,
+      cooperationUntil: "2026",
+      potentialText: "Высокий потенциал, быстро обучается.",
+      skillsText: "Скорость, дриблинг, завершение атак.",
+      contractStatusText: "Контракт до 2025, возможен переход.",
+      contactsText: "+7 900 000-00-00, agent@example.com",
+      pipelineStatus: "Контакт установлен",
+      tags: []
+    }
+  });
 }
 
 async function run() {
