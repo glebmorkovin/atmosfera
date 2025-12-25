@@ -1,6 +1,6 @@
 # ИС «Атмосфера»
 
-Монорепозиторий веб-приложения для цифровых профилей хоккеистов, поиска скаутами, шортлистов и админ-модерации.
+Монорепозиторий веб-приложения для цифровых профилей хоккеистов, шортлистов, запросов на сотрудничество, рабочих карточек, вакансий и админ-модерации.
 
 ## Стек
 - Frontend: Next.js 14 (App Router) + TypeScript + Tailwind.
@@ -10,7 +10,7 @@
 ## Структура
 - `apps/web` — фронтенд.
 - `apps/api` — backend.
-- `prisma/schema.prisma` — модель данных (пользователи, игроки, родители, лиги/клубы/сезоны, статы, медиа, шортлисты, заметки, уведомления, аудит).
+- `prisma/schema.prisma` — модель данных (пользователи, игроки, родители, лиги/клубы/сезоны, статы, медиа, шортлисты, запросы, рабочие карточки, вакансии, уведомления, аудит).
 - `docs/ARCHITECTURE.md` — архитектура и шаги запуска.
 
 ## Быстрый старт (локально)
@@ -25,7 +25,7 @@ npm run dev:api               # API на 3001
 npm run dev:web               # Web на 3000
 ```
 
-Тестовые логины (пароль `password123`): `player@example.com`, `parent@example.com`, `scout@example.com`, `admin@example.com`.
+Тестовые логины (пароль `password123`): `player@example.com`, `parent@example.com`, `scout@example.com`, `club@example.com`, `admin@example.com`.
 
 ## Прод/деплой (минимум)
 - Заполните `.env` (DATABASE_URL, JWT_SECRET, NEXT_PUBLIC_API_BASE_URL, PORT для api/web при необходимости).
@@ -49,19 +49,27 @@ npm run dev:web               # Web на 3000
 - Users: `GET /users/me`.
 - Players: поиск/деталь, фиксация просмотра, редактирование профиля, CRUD статистики, истории, достижений, медиа.
 - Profile Views: `/profile-views/:playerId/stats`.
-- Shortlists: CRUD + add/remove player, экспорт `GET /shortlists/:id/export?format=csv|xlsx`.
+- Shortlists: CRUD + add/remove player, meta, экспорт `GET /shortlists/:id/export?format=csv|xlsx`.
+- Engagement Requests: `/engagement-requests/*` (inbox/outbox, accept/decline, cancel).
+- Working Cards: `/working-cards/*` (list/detail/update, sync-preview/sync-apply).
+- Vacancies:
+  - Public: `GET /vacancies`, `GET /vacancies/:id`
+  - Club: `/club/vacancies/*`, `/club/applications/*`
+  - Player/Parent: `/vacancies/:id/applications`, `/player/applications`, `/parent/applications`
 - Saved Filters: CRUD.
 - Notes: CRUD заметок по игрокам/шортлистам.
 - Notifications: список, mark-read, mark-all.
 - Refs: `/refs/clubs|leagues|seasons` для выборов в формах.
-- Admin: пользователи (роли/статусы), модерация профилей/медиа, CRUD справочников, аудит.
+- Admin: пользователи (роли/статусы), модерация профилей/медиа, вакансий, CRUD справочников, аудит.
 
 ## Фронтенд
-- Лендинг и auth: `/`, `/auth/login`, `/auth/register`, `/auth/reset`.
-- Игрок: `/player/dashboard`, `/player/profile` (вкл. историю/достижения), `/player/stats`, `/player/media`.
-- Скаут: `/scout` (дашборд), `/scout/search` (фильтры + шортлист + заметки), `/scout/shortlists` (+ детали `/shortlists/[id]` с экспортом), `/scout/filters`, `/scout/notes`.
-- Админ: `/admin`, `/admin/players`, `/admin/media`, `/admin/refs`, `/admin/audit`.
-- Глобальные уведомления: `/notifications`, индикатор в хедере.
+- Публичные страницы: `/`, `/vacancies`, `/vacancies/:id`, `/auth/login`, `/auth/register`, `/auth/reset`.
+- Игрок: `/app/player/dashboard`, `/app/player/profile`, `/app/player/profile/edit`, `/app/player/stats`, `/app/player/media`, `/app/player/requests`, `/app/player/applications`, `/app/player/settings`.
+- Родитель: `/app/parent/dashboard`, `/app/parent/children`, `/app/parent/requests`, `/app/parent/applications`, `/app/parent/settings`.
+- Скаут: `/app/scout/dashboard`, `/app/scout/search`, `/app/scout/shortlists`, `/app/scout/shortlists/[id]`, `/app/scout/working`, `/app/scout/working/[id]`, `/app/scout/requests`, `/app/scout/settings`.
+- Клуб: `/app/club/dashboard`, `/app/club/search`, `/app/club/shortlists`, `/app/club/shortlists/[id]`, `/app/club/working`, `/app/club/working/[id]`, `/app/club/requests`, `/app/club/vacancies`, `/app/club/vacancies/new`, `/app/club/vacancies/[id]`, `/app/club/vacancies/[id]/edit`, `/app/club/vacancies/[id]/applications`, `/app/club/settings`.
+- Админ: `/admin/dashboard`, `/admin/vacancies`, `/admin/vacancies/[id]`, `/admin/players`, `/admin/media`, `/admin/refs`, `/admin/audit`.
+- Глобальные уведомления: `/notifications` (не для ADMIN).
 - API-клиент с auto-refresh токена: `apps/web/lib/api-client.ts` (`apiFetch`).
 
 ## Дополнительно
