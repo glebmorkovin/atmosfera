@@ -18,6 +18,8 @@ export default function ScoutShortlistsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [exportingId, setExportingId] = useState<string | null>(null);
+  const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "https://atmosfera-api.onrender.com/api";
 
   const load = async () => {
     setLoading(true);
@@ -60,22 +62,27 @@ export default function ScoutShortlistsPage() {
     }
   };
 
-  const exportCsv = (sl: Shortlist) => {
-    const header = "ФИО,Позиция,Клуб,Лига";
-    const rows = (sl.players || []).map((p) => [
-      `${p.firstName} ${p.lastName}`.replace(/,/g, " "),
-      p.position,
-      p.currentClub?.name || "",
-      p.currentLeague?.name || ""
-    ].join(","));
-    const csv = [header, ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${sl.name || "shortlist"}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const exportCsv = async (shortlistId: string) => {
+    setExportingId(shortlistId);
+    setError(null);
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+      const resp = await fetch(`${apiBase}/shortlists/${shortlistId}/export?format=csv`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+      });
+      if (!resp.ok) throw new Error("Export failed");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `shortlist-${shortlistId}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Не удалось экспортировать шортлист");
+    } finally {
+      setExportingId(null);
+    }
   };
 
   return (
@@ -139,7 +146,7 @@ export default function ScoutShortlistsPage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button className="primary-btn px-4 py-2 text-xs" onClick={() => exportCsv(sl)}>
+                <button className="primary-btn px-4 py-2 text-xs" onClick={() => exportCsv(sl.id)} disabled={exportingId === sl.id}>
                   Экспорт (CSV)
                 </button>
                 <button className="ghost-btn px-4 py-2 text-xs" onClick={() => remove(sl.id)}>

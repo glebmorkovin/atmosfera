@@ -60,7 +60,7 @@ const toMetaDraft = (player: PlayerItem) => ({
   note: player.meta?.note || ""
 });
 
-export default function ShortlistDetailPage() {
+export default function ClubShortlistDetailPage() {
   const params = useParams();
   const shortlistId = params?.id as string;
   const [sl, setSl] = useState<Shortlist | null>(null);
@@ -250,13 +250,13 @@ export default function ShortlistDetailPage() {
       <div className="container space-y-8 py-12">
         <div className="flex items-center justify-between">
           <div>
-            <p className="pill mb-2">Скаут • Шортлист</p>
+            <p className="pill mb-2">Клуб • Шортлист</p>
             <h1 className="text-3xl font-bold">{sl ? sl.name : "Шортлист"}</h1>
             <p className="text-white/70">Сравнение кандидатов и локальные заметки.</p>
             {error && <p className="text-sm text-amber-300">{error}</p>}
             {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
-          <Link href="/app/scout/shortlists" className="ghost-btn">
+          <Link href="/app/club/shortlists" className="ghost-btn">
             Назад
           </Link>
         </div>
@@ -361,7 +361,7 @@ export default function ShortlistDetailPage() {
                             <td className="px-3 py-3 min-w-[220px]">{renderMetaEditor(p)}</td>
                             <td className="px-3 py-3">
                               <div className="flex flex-col gap-2">
-                                <Link href={`/app/scout/players/${p.id}`} className="ghost-btn px-3 py-2 text-xs">Профиль</Link>
+                                <Link href={`/app/club/players/${p.id}`} className="ghost-btn px-3 py-2 text-xs">Профиль</Link>
                                 <button className="ghost-btn px-3 py-2 text-xs" onClick={() => removePlayer(p.id)}>Удалить</button>
                               </div>
                             </td>
@@ -409,7 +409,7 @@ export default function ShortlistDetailPage() {
                         </div>
                         {renderMetaEditor(p)}
                         <div className="flex gap-2">
-                          <Link href={`/app/scout/players/${p.id}`} className="ghost-btn px-3 py-2 text-xs">Профиль</Link>
+                          <Link href={`/app/club/players/${p.id}`} className="ghost-btn px-3 py-2 text-xs">Профиль</Link>
                           <button className="ghost-btn px-3 py-2 text-xs" onClick={() => removePlayer(p.id)}>Удалить</button>
                         </div>
                       </div>

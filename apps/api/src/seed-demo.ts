@@ -257,6 +257,33 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       tags: []
     }
   });
+
+  const scoutShortlist = await prisma.shortlist.upsert({
+    where: { id: "demo-shortlist-scout" },
+    update: {},
+    create: {
+      id: "demo-shortlist-scout",
+      ownerUserId: scoutUser.id,
+      name: "Топ нападающие",
+      description: "Список игроков для просмотра"
+    }
+  });
+
+  await prisma.shortlistPlayer.upsert({
+    where: { shortlistId_playerId: { shortlistId: scoutShortlist.id, playerId: playerProfile.id } },
+    update: {
+      rating: 7,
+      tags: ["Скорость", "Интересен"],
+      note: "Хорошая динамика, проверить весной."
+    },
+    create: {
+      shortlistId: scoutShortlist.id,
+      playerId: playerProfile.id,
+      rating: 7,
+      tags: ["Скорость", "Интересен"],
+      note: "Хорошая динамика, проверить весной."
+    }
+  });
 }
 
 async function run() {

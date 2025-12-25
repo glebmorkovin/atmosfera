@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Res, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Res, UseGuards } from "@nestjs/common";
 import { ShortlistsService } from "./shortlists.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { Roles } from "../common/decorators/roles.decorator";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
 import { Response } from "express";
+import { UpdateShortlistPlayerMetaDto } from "./dto/update-shortlist-player-meta.dto";
 
 @Controller("shortlists")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,6 +36,16 @@ export class ShortlistsController {
   @Delete(":id/players/:playerId")
   removePlayer(@Param("id") id: string, @Param("playerId") playerId: string, @CurrentUser() user: any) {
     return this.shortlistsService.removePlayer(id, playerId, user.id);
+  }
+
+  @Put(":id/players/:playerId/meta")
+  updateMeta(
+    @Param("id") id: string,
+    @Param("playerId") playerId: string,
+    @Body() payload: UpdateShortlistPlayerMetaDto,
+    @CurrentUser() user: any
+  ) {
+    return this.shortlistsService.updatePlayerMeta(id, playerId, user.id, payload);
   }
 
   @Delete(":id")

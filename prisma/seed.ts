@@ -353,10 +353,17 @@ async function main() {
 
   await prisma.shortlistPlayer.upsert({
     where: { shortlistId_playerId: { shortlistId: shortlist.id, playerId: playerProfile.id } },
-    update: {},
+    update: {
+      rating: 8,
+      tags: ["Просмотрен", "Интересен"],
+      note: "Рекомендуется для просмотра в январе."
+    },
     create: {
       shortlistId: shortlist.id,
-      playerId: playerProfile.id
+      playerId: playerProfile.id,
+      rating: 8,
+      tags: ["Просмотрен", "Интересен"],
+      note: "Рекомендуется для просмотра в январе."
     }
   });
 

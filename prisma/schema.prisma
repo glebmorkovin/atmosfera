@@ -346,6 +346,9 @@ model Shortlist {
 model ShortlistPlayer {
   shortlistId String
   playerId    String
+  rating      Int?
+  tags        String[] @default([])
+  note        String?  @db.Text
 
   shortlist Shortlist @relation(fields: [shortlistId], references: [id])
   player    Player    @relation(fields: [playerId], references: [id])
