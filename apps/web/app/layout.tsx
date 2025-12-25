@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className="bg-gradient-to-b from-secondary via-secondary to-black text-white">
+      <body className="bg-secondary">
         <AppHeader />
         {children}
       </body>

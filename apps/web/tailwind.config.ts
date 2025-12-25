@@ -8,10 +8,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#0ea5e9",
-        secondary: "#0f172a",
-        accent: "#22d3ee",
-        muted: "#e2e8f0"
+        primary: "rgb(var(--accent-rgb) / <alpha-value>)",
+        secondary: "rgb(var(--bg-rgb) / <alpha-value>)",
+        accent: "rgb(var(--accent-rgb) / <alpha-value>)",
+        muted: "rgb(var(--muted-rgb) / <alpha-value>)",
+        panel: "rgb(var(--panel-rgb) / <alpha-value>)"
       }
     }
   },
