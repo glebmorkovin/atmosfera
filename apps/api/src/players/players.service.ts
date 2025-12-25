@@ -123,6 +123,21 @@ export class PlayersService {
     return this.getById(player.id, user);
   }
 
+  async listParentChildren(userId: string) {
+    const parent = await this.prisma.parentProfile.findUnique({ where: { userId } });
+    if (!parent) return [];
+    const links = await this.prisma.playerParent.findMany({
+      where: { parentId: parent.id },
+      include: { player: true }
+    });
+    return links.map((link) => ({
+      id: link.player.id,
+      firstName: link.player.firstName,
+      lastName: link.player.lastName,
+      position: link.player.position
+    }));
+  }
+
   async search(filters: SearchFilters, pagination: Pagination, user?: { id: string; role: UserRole }) {
     const {
       position,

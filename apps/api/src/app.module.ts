@@ -16,6 +16,7 @@ import { MediaModule } from "./media/media.module";
 import { RefsModule } from "./refs/refs.module";
 import { EngagementRequestsModule } from "./engagement-requests/engagement-requests.module";
 import { WorkingCardsModule } from "./working-cards/working-cards.module";
+import { VacanciesModule } from "./vacancies/vacancies.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { WorkingCardsModule } from "./working-cards/working-cards.module";
     NotesModule,
     EngagementRequestsModule,
     WorkingCardsModule,
+    VacanciesModule,
     AdminModule,
     MediaModule,
     RefsModule

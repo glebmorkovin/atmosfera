@@ -1,4 +1,14 @@
-import { EngagementRequestStatus, PrismaClient, ModerationStatus, Position, UserRole, WorkingCardSource } from "@prisma/client";
+import {
+  EngagementRequestStatus,
+  PrismaClient,
+  ModerationStatus,
+  Position,
+  UserRole,
+  WorkingCardSource,
+  VacancyStatus,
+  VacancyType,
+  VacancyApplicationStatus
+} from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 const DEMO_PASSWORD = "password123";
@@ -282,6 +292,39 @@ export async function seedDemoUsers(prisma: PrismaClient) {
       rating: 7,
       tags: ["Скорость", "Интересен"],
       note: "Хорошая динамика, проверить весной."
+    }
+  });
+
+  const demoVacancy = await prisma.vacancy.upsert({
+    where: { id: "demo-vacancy-1" },
+    update: {},
+    create: {
+      id: "demo-vacancy-1",
+      clubUserId: clubUser.id,
+      title: "Просмотр игроков 2008–2010",
+      type: VacancyType.VIEWING,
+      positions: ["C", "LW"],
+      ageFrom: 14,
+      ageTo: 16,
+      locationCountry: "Россия",
+      locationCity: "Москва",
+      description: "Приглашаем игроков на просмотр в академию.",
+      requirements: "Опыт участия в турнирах, дисциплина.",
+      conditions: "Питание предоставляется, проживание — по согласованию.",
+      contactMode: "platform_only",
+      status: VacancyStatus.PUBLISHED,
+      publishedAt: new Date()
+    }
+  });
+
+  await prisma.vacancyApplication.upsert({
+    where: { vacancyId_playerId: { vacancyId: demoVacancy.id, playerId: playerProfile.id } },
+    update: { status: VacancyApplicationStatus.SENT, messageFromPlayer: "Готов приехать на просмотр." },
+    create: {
+      vacancyId: demoVacancy.id,
+      playerId: playerProfile.id,
+      status: VacancyApplicationStatus.SENT,
+      messageFromPlayer: "Готов приехать на просмотр."
     }
   });
 }

@@ -41,6 +41,32 @@ enum NotificationType {
   SYSTEM
 }
 
+enum VacancyStatus {
+  DRAFT
+  PENDING_MODERATION
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum VacancyType {
+  TRYOUT
+  CONTRACT
+  ACADEMY
+  VIEWING
+  OTHER
+}
+
+enum VacancyApplicationStatus {
+  SENT
+  VIEWED
+  SHORTLISTED
+  INVITED
+  REJECTED
+  WITHDRAWN
+  ACCEPTED
+}
+
 enum EngagementRequestStatus {
   PENDING
   ACCEPTED
@@ -81,6 +107,7 @@ model User {
   viewedProfiles ProfileViewEvent[] @relation("ViewerEvents")
   engagementRequests EngagementRequest[] @relation("EngagementInitiator")
   workingCards WorkingCard[] @relation("WorkingCardOwner")
+  vacancies   Vacancy[]
 
   @@index([role])
 }
@@ -131,6 +158,7 @@ model Player {
   agentCard        AgentCard?
   engagementRequests EngagementRequest[]
   workingCards    WorkingCard[]
+  vacancyApplications VacancyApplication[]
 
   @@index([position])
   @@index([dateOfBirth])
@@ -247,6 +275,7 @@ model League {
   players   Player[] @relation("CurrentLeague")
   statLines PlayerStatLine[]
   histories PlayerClubHistory[]
+  vacancies Vacancy[]
 }
 
 model Season {
@@ -354,6 +383,56 @@ model ShortlistPlayer {
   player    Player    @relation(fields: [playerId], references: [id])
 
   @@id([shortlistId, playerId])
+}
+
+model Vacancy {
+  id          String   @id @default(cuid())
+  clubUserId  String
+  title       String
+  type        VacancyType @default(OTHER)
+  positions   String[]
+  ageFrom     Int?
+  ageTo       Int?
+  locationCountry String?
+  locationCity String?
+  leagueId    String?
+  description String   @db.Text
+  requirements String? @db.Text
+  conditions  String? @db.Text
+  applicationDeadline DateTime?
+  contactMode String?
+  status      VacancyStatus @default(DRAFT)
+  rejectionReason String? @db.Text
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clubUser    User   @relation(fields: [clubUserId], references: [id])
+  league      League? @relation(fields: [leagueId], references: [id])
+  applications VacancyApplication[]
+
+  @@index([clubUserId])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model VacancyApplication {
+  id          String   @id @default(cuid())
+  vacancyId   String
+  playerId    String
+  status      VacancyApplicationStatus @default(SENT)
+  messageFromPlayer String? @db.Text
+  messageFromClub String? @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vacancy     Vacancy @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+  player      Player  @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([vacancyId, playerId])
+  @@index([vacancyId])
+  @@index([playerId])
+  @@index([status])
 }
 
 model Note {

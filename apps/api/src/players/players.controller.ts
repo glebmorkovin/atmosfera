@@ -40,6 +40,12 @@ export class PlayersController {
     return this.playersService.getSelf(user);
   }
 
+  @Get("parent/children")
+  @Roles("PARENT")
+  getParentChildren(@CurrentUser() user: any) {
+    return this.playersService.listParentChildren(user.id);
+  }
+
   @Get(":id")
   @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
   getPlayer(@Param("id") id: string, @CurrentUser() user: any) {
