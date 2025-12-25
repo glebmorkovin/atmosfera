@@ -1,5 +1,15 @@
 import { clearAuth } from "@/lib/auth";
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 type FetchOptions = {
   method?: string;
   headers?: Record<string, string>;
@@ -52,7 +62,8 @@ async function refreshTokens() {
   });
   if (!res.ok) {
     clearTokens();
-    throw new Error("Refresh failed");
+    const text = await res.text();
+    throw new ApiError(res.status, text || "Refresh failed");
   }
   const data = await res.json();
   setTokens(data.accessToken, data.refreshToken);
@@ -78,7 +89,7 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     }
     if (!res.ok) {
       const text = await res.text();
-      throw new Error(text || res.statusText);
+      throw new ApiError(res.status, text || res.statusText);
     }
     if (res.status === 204) return null as any;
     return res.json();
@@ -90,6 +101,19 @@ export function getTokens() {
   return { accessToken, refreshToken };
 }
 
-export function logoutClient() {
+export async function logoutClient() {
+  if (typeof window === "undefined") return;
+  const storedRefresh = localStorage.getItem("refreshToken");
+  if (storedRefresh) {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: storedRefresh })
+      });
+    } catch {
+      // ignore network errors on logout
+    }
+  }
   clearTokens();
 }

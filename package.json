@@ -9,12 +9,16 @@
   "scripts": {
     "postinstall": "node scripts/render-migrate-repair.js",
     "dev:web": "npm run dev --workspace web",
-    "dev:api": "npm run start:dev --workspace api"
+    "dev:api": "npm run start:dev --workspace api",
+    "test": "playwright test"
   },
   "prisma": {
     "seed": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' ts-node --transpile-only prisma/seed.ts"
   },
   "engines": {
     "node": ">=18.17"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
   }
 }

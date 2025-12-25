@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
 
 type PlayerCard = {
   id: string;
@@ -49,27 +49,48 @@ export default function ScoutSearchRealPage() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [leagueQuery, setLeagueQuery] = useState("");
   const [clubQuery, setClubQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
-  const loadPlayers = async () => {
+  const loadPlayers = async (targetPage = page) => {
     setLoading(true);
     setError(null);
     try {
-      const query = new URLSearchParams({ pageSize: "50" });
+      const query = new URLSearchParams({ pageSize: String(pageSize), page: String(targetPage) });
       if (position !== "Все") query.set("position", position);
       if (leagueId) query.set("leagueId", leagueId);
       if (clubId) query.set("clubId", clubId);
       if (hasVideo) query.set("hasVideo", "true");
-      const data = await apiFetch<{ data: PlayerCard[] }>(`/players/search?${query.toString()}`, { auth: true });
+      const data = await apiFetch<{
+        data: PlayerCard[];
+        pagination?: { page: number; pageSize: number; total: number; totalPages: number };
+      }>(`/players/search?${query.toString()}`, { auth: true });
       setPlayers(data.data || []);
+      const nextTotalPages = data.pagination?.totalPages ?? 1;
+      setPage(data.pagination?.page || targetPage);
+      setTotalPages(nextTotalPages > 0 ? nextTotalPages : 1);
+      setTotal(data.pagination?.total || 0);
     } catch (err) {
-      setError("Не удалось загрузить игроков. Убедитесь, что API запущен, и попробуйте снова.");
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setError("Нужен вход, чтобы использовать поиск игроков.");
+        } else if (err.status === 403) {
+          setError("Нет доступа к поиску игроков для этой роли.");
+        } else {
+          setError("Не удалось загрузить игроков. Попробуйте позже.");
+        }
+      } else {
+        setError("Не удалось загрузить игроков. Попробуйте позже.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadPlayers();
+    loadPlayers(1);
     const loadFilters = async () => {
       try {
         const data = await apiFetch<SavedFilter[]>("/search-filters", { auth: true });
@@ -206,6 +227,11 @@ export default function ScoutSearchRealPage() {
             {error && <p className="text-sm text-amber-300">{error}</p>}
             {message && <p className="text-sm text-emerald-300">{message}</p>}
             {loading && <p className="text-sm text-white/60">Загрузка...</p>}
+            {error && !loading && (
+              <button className="ghost-btn mt-2 px-4 py-2 text-xs" type="button" onClick={() => loadPlayers(1)}>
+                Повторить
+              </button>
+            )}
           </div>
           <Link href="/app/scout/dashboard" className="ghost-btn">
             Назад
@@ -358,7 +384,7 @@ export default function ScoutSearchRealPage() {
             </label>
           </div>
           <div className="flex gap-3">
-            <button className="primary-btn px-4 py-2 text-sm" type="button" onClick={loadPlayers} disabled={loading}>
+            <button className="primary-btn px-4 py-2 text-sm" type="button" onClick={() => loadPlayers(1)} disabled={loading}>
               Применить фильтры
             </button>
             <button
@@ -369,7 +395,7 @@ export default function ScoutSearchRealPage() {
                 setLeagueId("");
                 setClubId("");
                 setHasVideo(false);
-                loadPlayers();
+                loadPlayers(1);
               }}
             >
               Сбросить
@@ -422,6 +448,25 @@ export default function ScoutSearchRealPage() {
           {!loading && filtered.length === 0 && (
             <div className="card md:col-span-3 text-center text-white/70">Игроки не найдены. Попробуйте другие фильтры.</div>
           )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-white/70">
+          <span>Найдено: {total}</span>
+          <div className="flex items-center gap-3">
+            <button className="ghost-btn px-3 py-2 text-xs" onClick={() => loadPlayers(page - 1)} disabled={loading || page <= 1}>
+              Назад
+            </button>
+            <span>
+              Страница {page} из {totalPages}
+            </span>
+            <button
+              className="ghost-btn px-3 py-2 text-xs"
+              onClick={() => loadPlayers(page + 1)}
+              disabled={loading || page >= totalPages}
+            >
+              Дальше
+            </button>
+          </div>
         </div>
       </div>
     </main>

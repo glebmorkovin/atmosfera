@@ -1,4 +1,4 @@
-import { Controller, ForbiddenException, Get, NotFoundException, Param, ParseIntPipe, UseGuards } from "@nestjs/common";
+import { Controller, ForbiddenException, Get, NotFoundException, Param, ParseIntPipe, Query, UseGuards } from "@nestjs/common";
 import { ProfileViewsService } from "./profile-views.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { CurrentUser } from "../common/decorators/current-user.decorator";
@@ -15,7 +15,7 @@ export class ProfileViewsController {
   @Get(":playerId/stats")
   async stats(
     @Param("playerId") playerId: string,
-    @Param("days", ParseIntPipe) days?: number,
+    @Query("days", new ParseIntPipe({ optional: true })) days?: number,
     @CurrentUser() user?: any
   ) {
     const player = await this.prisma.player.findUnique({

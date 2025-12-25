@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
-import { getStoredRole, roleHome, saveRole } from "@/lib/auth";
+import { getStoredRole, roleHome, saveRole, saveTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 const roles = [
@@ -49,9 +49,15 @@ export default function RegisterPage() {
         body: { email, password, role, firstName, lastName, country, city }
       });
       if (typeof window !== "undefined") {
-        localStorage.setItem("accessToken", data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
-        saveRole(role);
+        saveTokens(data.accessToken, data.refreshToken);
+        let nextRole: string | undefined = role;
+        try {
+          const me = await apiFetch<{ role: string }>("/users/me", { auth: true });
+          nextRole = me.role || nextRole;
+        } catch {
+          // fallback to role from form
+        }
+        saveRole(nextRole);
       }
       setMessage("Аккаунт создан, токены сохранены. Можно заходить в кабинеты.");
     } catch (err) {

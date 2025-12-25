@@ -25,3 +25,8 @@ coverage
 *.swo
 *.idea
 .vscode
+
+ATMOSFERA_FULL_DOC.md
+
+test-results
+playwright-report

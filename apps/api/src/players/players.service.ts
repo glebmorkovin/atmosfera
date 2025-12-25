@@ -106,6 +106,9 @@ export class PlayersService {
       }
     });
     if (!player) throw new NotFoundException("Player not found");
+    if ((user?.role === UserRole.SCOUT || user?.role === UserRole.CLUB) && (!player.isPublicInSearch || !player.isActive)) {
+      throw new NotFoundException("Player not found");
+    }
     if (user?.role === UserRole.PLAYER && player.userId !== user.id) {
       throw new ForbiddenException("Нет доступа");
     }

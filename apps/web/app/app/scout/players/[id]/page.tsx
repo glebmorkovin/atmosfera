@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
 
 type StatLine = {
   id: string;
@@ -98,8 +98,20 @@ export default function ScoutPlayerProfilePage() {
       setPlayer(data);
       // зафиксировать просмотр
       apiFetch(`/players/${playerId}/view`, { method: "POST", auth: true }).catch(() => null);
-    } catch {
-      setError("Не удалось загрузить профиль (нужен вход и запущенный API)");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 404) {
+          setError("Профиль скрыт или не найден.");
+        } else if (err.status === 403) {
+          setError("Нет доступа к этому профилю.");
+        } else if (err.status === 401) {
+          setError("Нужен вход, чтобы открыть профиль.");
+        } else {
+          setError("Не удалось загрузить профиль. Попробуйте позже.");
+        }
+      } else {
+        setError("Не удалось загрузить профиль. Попробуйте позже.");
+      }
     } finally {
       setLoading(false);
     }

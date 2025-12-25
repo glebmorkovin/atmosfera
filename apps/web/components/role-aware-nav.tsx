@@ -59,11 +59,11 @@ export function RoleAwareNav({ children }: { children?: React.ReactNode }) {
     setRole(getStoredRole());
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (!window.confirm("Вы точно хотите выйти из аккаунта?")) return;
-    logoutClient();
+    await logoutClient();
     setRole(null);
-    router.replace("/");
+    router.replace("/auth/login");
   };
 
   if (!role) {

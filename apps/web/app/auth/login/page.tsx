@@ -38,10 +38,17 @@ export default function LoginPage() {
       });
       if (typeof window !== "undefined") {
         saveTokens(data.accessToken, data.refreshToken);
-        saveRole(data.user?.role);
+        let role = data.user?.role;
+        try {
+          const me = await apiFetch<{ role: string }>("/users/me", { auth: true });
+          role = me.role || role;
+        } catch {
+          // fallback to role from login response
+        }
+        saveRole(role);
+        redirectByRole(role);
       }
       setMessage("Успех: токены сохранены. Перенаправляем...");
-      redirectByRole(data.user?.role);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка входа");
     } finally {
