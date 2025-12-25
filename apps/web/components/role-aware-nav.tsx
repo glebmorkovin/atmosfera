@@ -43,6 +43,7 @@ const navByRole: Record<UserRole, { href: string; label: string }[]> = {
   ],
   ADMIN: [
     { href: "/admin/dashboard", label: "Админ" },
+    { href: "/admin/vacancies", label: "Вакансии" },
     { href: "/admin/players", label: "Профили игроков" },
     { href: "/admin/media", label: "Медиа" },
     { href: "/admin/refs", label: "Справочники" },

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { Roles } from "../common/decorators/roles.decorator";
-import { ModerationStatus, MediaStatus } from "@prisma/client";
+import { ModerationStatus, MediaStatus, VacancyStatus } from "@prisma/client";
+import { CurrentUser } from "../common/decorators/current-user.decorator";
 
 @Controller("admin")
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -130,5 +131,75 @@ export class AdminController {
       orderBy: { createdAt: "desc" },
       take: 200
     });
+  }
+
+  // Модерация вакансий
+  @Get("vacancies")
+  getVacancies(@Query("status") status?: VacancyStatus) {
+    const where = status ? { status } : { status: VacancyStatus.PENDING_MODERATION };
+    return this.prisma.vacancy.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      include: { clubUser: { select: { id: true, firstName: true, lastName: true } }, league: true }
+    });
+  }
+
+  @Get("vacancies/:id")
+  getVacancy(@Param("id") id: string) {
+    return this.prisma.vacancy.findUnique({
+      where: { id },
+      include: { clubUser: { select: { id: true, firstName: true, lastName: true } }, league: true }
+    });
+  }
+
+  @Post("vacancies/:id/approve")
+  async approveVacancy(@Param("id") id: string, @CurrentUser() user: any) {
+    const vacancy = await this.prisma.vacancy.findUnique({ where: { id } });
+    if (!vacancy) throw new BadRequestException("Вакансия не найдена");
+    if (vacancy.status !== VacancyStatus.PENDING_MODERATION) {
+      throw new ConflictException("Вакансия не ожидает модерации");
+    }
+    const updated = await this.prisma.vacancy.update({
+      where: { id },
+      data: { status: VacancyStatus.PUBLISHED, publishedAt: new Date(), rejectionReason: null }
+    });
+    await this.prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "VACANCY_APPROVED",
+        entityType: "VACANCY",
+        entityId: id,
+        payload: { fromStatus: vacancy.status, toStatus: updated.status }
+      }
+    });
+    return updated;
+  }
+
+  @Post("vacancies/:id/reject")
+  async rejectVacancy(
+    @Param("id") id: string,
+    @CurrentUser() user: any,
+    @Body() payload: { reason?: string }
+  ) {
+    if (!payload?.reason) throw new BadRequestException("Укажите причину отклонения");
+    const vacancy = await this.prisma.vacancy.findUnique({ where: { id } });
+    if (!vacancy) throw new BadRequestException("Вакансия не найдена");
+    if (vacancy.status !== VacancyStatus.PENDING_MODERATION) {
+      throw new ConflictException("Вакансия не ожидает модерации");
+    }
+    const updated = await this.prisma.vacancy.update({
+      where: { id },
+      data: { status: VacancyStatus.REJECTED, rejectionReason: payload.reason }
+    });
+    await this.prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "VACANCY_REJECTED",
+        entityType: "VACANCY",
+        entityId: id,
+        payload: { fromStatus: vacancy.status, toStatus: updated.status, reason: payload.reason }
+      }
+    });
+    return updated;
   }
 }

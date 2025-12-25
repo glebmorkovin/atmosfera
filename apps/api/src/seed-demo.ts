@@ -317,6 +317,27 @@ export async function seedDemoUsers(prisma: PrismaClient) {
     }
   });
 
+  await prisma.vacancy.upsert({
+    where: { id: "demo-vacancy-2" },
+    update: {},
+    create: {
+      id: "demo-vacancy-2",
+      clubUserId: clubUser.id,
+      title: "Набор игроков 2009–2011",
+      type: VacancyType.ACADEMY,
+      positions: ["D", "G"],
+      ageFrom: 13,
+      ageTo: 15,
+      locationCountry: "Россия",
+      locationCity: "Ярославль",
+      description: "Идёт набор в молодежную академию клуба.",
+      requirements: "Опыт участия в первенствах, дисциплина.",
+      conditions: "Проживание и питание предоставляются.",
+      contactMode: "platform_only",
+      status: VacancyStatus.PENDING_MODERATION
+    }
+  });
+
   await prisma.vacancyApplication.upsert({
     where: { vacancyId_playerId: { vacancyId: demoVacancy.id, playerId: playerProfile.id } },
     update: { status: VacancyApplicationStatus.SENT, messageFromPlayer: "Готов приехать на просмотр." },
