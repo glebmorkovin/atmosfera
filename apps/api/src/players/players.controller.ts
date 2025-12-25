@@ -46,6 +46,51 @@ export class PlayersController {
     return this.playersService.listParentChildren(user.id);
   }
 
+  @Get("search")
+  @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
+  searchPlayers(
+    @Query("position") position?: string,
+    @Query("leagueId") leagueId?: string,
+    @Query("clubId") clubId?: string,
+    @Query("country") country?: string,
+    @Query("city") city?: string,
+    @Query("minBirthYear", ParseIntPipe) minBirthYear?: number,
+    @Query("maxBirthYear", ParseIntPipe) maxBirthYear?: number,
+    @Query("minHeight", ParseIntPipe) minHeight?: number,
+    @Query("maxHeight", ParseIntPipe) maxHeight?: number,
+    @Query("minWeight", ParseIntPipe) minWeight?: number,
+    @Query("maxWeight", ParseIntPipe) maxWeight?: number,
+    @Query("hasVideo", new ParseBoolPipe({ optional: true })) hasVideo?: boolean,
+    @Query("minGames", ParseIntPipe) minGames?: number,
+    @Query("minGoals", ParseIntPipe) minGoals?: number,
+    @Query("minPoints", ParseIntPipe) minPoints?: number,
+    @Query("page", ParseIntPipe) page = 1,
+    @Query("pageSize", ParseIntPipe) pageSize = 20,
+    @CurrentUser() user?: any
+  ) {
+    return this.playersService.search(
+      {
+        position,
+        leagueId,
+        clubId,
+        country,
+        city,
+        minBirthYear,
+        maxBirthYear,
+        minHeight,
+        maxHeight,
+        minWeight,
+        maxWeight,
+        hasVideo,
+        minGames,
+        minGoals,
+        minPoints
+      },
+      { page, pageSize },
+      user
+    );
+  }
+
   @Get(":id")
   @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
   getPlayer(@Param("id") id: string, @CurrentUser() user: any) {
@@ -118,48 +163,4 @@ export class PlayersController {
     return this.playersService.deleteAchievement(achievementId, user);
   }
 
-  @Get("search")
-  @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
-  searchPlayers(
-    @Query("position") position?: string,
-    @Query("leagueId") leagueId?: string,
-    @Query("clubId") clubId?: string,
-    @Query("country") country?: string,
-    @Query("city") city?: string,
-    @Query("minBirthYear", ParseIntPipe) minBirthYear?: number,
-    @Query("maxBirthYear", ParseIntPipe) maxBirthYear?: number,
-    @Query("minHeight", ParseIntPipe) minHeight?: number,
-    @Query("maxHeight", ParseIntPipe) maxHeight?: number,
-    @Query("minWeight", ParseIntPipe) minWeight?: number,
-    @Query("maxWeight", ParseIntPipe) maxWeight?: number,
-    @Query("hasVideo", new ParseBoolPipe({ optional: true })) hasVideo?: boolean,
-    @Query("minGames", ParseIntPipe) minGames?: number,
-    @Query("minGoals", ParseIntPipe) minGoals?: number,
-    @Query("minPoints", ParseIntPipe) minPoints?: number,
-    @Query("page", ParseIntPipe) page = 1,
-    @Query("pageSize", ParseIntPipe) pageSize = 20,
-    @CurrentUser() user?: any
-  ) {
-    return this.playersService.search(
-      {
-        position,
-        leagueId,
-        clubId,
-        country,
-        city,
-        minBirthYear,
-        maxBirthYear,
-        minHeight,
-        maxHeight,
-        minWeight,
-        maxWeight,
-        hasVideo,
-        minGames,
-        minGoals,
-        minPoints
-      },
-      { page, pageSize },
-      user
-    );
-  }
 }
