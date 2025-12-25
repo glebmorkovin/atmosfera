@@ -54,20 +54,33 @@ export class PlayersController {
     @Query("clubId") clubId?: string,
     @Query("country") country?: string,
     @Query("city") city?: string,
-    @Query("minBirthYear", new ParseIntPipe({ optional: true })) minBirthYear?: number,
-    @Query("maxBirthYear", new ParseIntPipe({ optional: true })) maxBirthYear?: number,
-    @Query("minHeight", new ParseIntPipe({ optional: true })) minHeight?: number,
-    @Query("maxHeight", new ParseIntPipe({ optional: true })) maxHeight?: number,
-    @Query("minWeight", new ParseIntPipe({ optional: true })) minWeight?: number,
-    @Query("maxWeight", new ParseIntPipe({ optional: true })) maxWeight?: number,
-    @Query("hasVideo", new ParseBoolPipe({ optional: true })) hasVideo?: boolean,
-    @Query("minGames", new ParseIntPipe({ optional: true })) minGames?: number,
-    @Query("minGoals", new ParseIntPipe({ optional: true })) minGoals?: number,
-    @Query("minPoints", new ParseIntPipe({ optional: true })) minPoints?: number,
-    @Query("page", new ParseIntPipe({ optional: true })) page = 1,
-    @Query("pageSize", new ParseIntPipe({ optional: true })) pageSize = 20,
+    @Query("minBirthYear") minBirthYear?: string,
+    @Query("maxBirthYear") maxBirthYear?: string,
+    @Query("minHeight") minHeight?: string,
+    @Query("maxHeight") maxHeight?: string,
+    @Query("minWeight") minWeight?: string,
+    @Query("maxWeight") maxWeight?: string,
+    @Query("hasVideo") hasVideo?: string,
+    @Query("minGames") minGames?: string,
+    @Query("minGoals") minGoals?: string,
+    @Query("minPoints") minPoints?: string,
+    @Query("page") page?: string,
+    @Query("pageSize") pageSize?: string,
     @CurrentUser() user?: any
   ) {
+    const toOptionalInt = (value?: string) => {
+      if (value === undefined || value === null || value === "") return undefined;
+      const num = Number(value);
+      return Number.isFinite(num) && Number.isInteger(num) ? num : undefined;
+    };
+    const toOptionalBool = (value?: string) => {
+      if (value === undefined || value === null || value === "") return undefined;
+      return value === "true";
+    };
+
+    const parsedPage = toOptionalInt(page) ?? 1;
+    const parsedPageSize = toOptionalInt(pageSize) ?? 20;
+
     return this.playersService.search(
       {
         position,
@@ -75,18 +88,18 @@ export class PlayersController {
         clubId,
         country,
         city,
-        minBirthYear,
-        maxBirthYear,
-        minHeight,
-        maxHeight,
-        minWeight,
-        maxWeight,
-        hasVideo,
-        minGames,
-        minGoals,
-        minPoints
+        minBirthYear: toOptionalInt(minBirthYear),
+        maxBirthYear: toOptionalInt(maxBirthYear),
+        minHeight: toOptionalInt(minHeight),
+        maxHeight: toOptionalInt(maxHeight),
+        minWeight: toOptionalInt(minWeight),
+        maxWeight: toOptionalInt(maxWeight),
+        hasVideo: toOptionalBool(hasVideo),
+        minGames: toOptionalInt(minGames),
+        minGoals: toOptionalInt(minGoals),
+        minPoints: toOptionalInt(minPoints)
       },
-      { page, pageSize },
+      { page: parsedPage, pageSize: parsedPageSize },
       user
     );
   }
