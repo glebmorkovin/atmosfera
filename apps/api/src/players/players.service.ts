@@ -1,7 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { EngagementRequestStatus, MediaStatus, NotificationType, UserRole } from "@prisma/client";
+import { EngagementRequestStatus, MediaStatus, NotificationType, Position, UserRole } from "@prisma/client";
 import { NotificationsService } from "../notifications/notifications.service";
+import * as bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 
 type ListFilters = Partial<{
   position: string;
@@ -30,6 +32,19 @@ type SearchFilters = Partial<{
 }>;
 
 type Pagination = { page: number; pageSize: number };
+type CreateParentChildPayload = {
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
+  dateOfBirth?: string;
+  position?: string;
+  country?: string;
+  city?: string;
+  nationality?: string;
+  email?: string;
+  password?: string;
+  relationType?: string;
+};
 
 @Injectable()
 export class PlayersService {
@@ -137,8 +152,110 @@ export class PlayersService {
       id: link.player.id,
       firstName: link.player.firstName,
       lastName: link.player.lastName,
-      position: link.player.position
+      position: link.player.position,
+      dateOfBirth: link.player.dateOfBirth,
+      city: link.player.city,
+      country: link.player.country
     }));
+  }
+
+  async createParentChild(userId: string, payload: CreateParentChildPayload) {
+    const parent = await this.ensureParentProfile(userId);
+    const firstName = payload.firstName?.trim();
+    const lastName = payload.lastName?.trim();
+    const middleName = payload.middleName?.trim() || null;
+    const country = payload.country?.trim();
+    const city = payload.city?.trim();
+    const nationality = payload.nationality?.trim() || country || "Не указано";
+
+    if (!firstName) throw new BadRequestException("Имя обязательно");
+    if (!lastName) throw new BadRequestException("Фамилия обязательна");
+    if (!country) throw new BadRequestException("Страна обязательна");
+    if (!city) throw new BadRequestException("Город обязателен");
+
+    if (!payload.dateOfBirth) throw new BadRequestException("Дата рождения обязательна");
+    const dateOfBirth = new Date(payload.dateOfBirth);
+    if (Number.isNaN(dateOfBirth.getTime())) throw new BadRequestException("Некорректная дата рождения");
+
+    const positionKey = payload.position?.toUpperCase();
+    if (!positionKey || !(positionKey in Position)) {
+      throw new BadRequestException("Позиция обязательна");
+    }
+    const position = Position[positionKey as keyof typeof Position];
+
+    const rawEmail = payload.email?.trim().toLowerCase();
+    if (rawEmail && !rawEmail.includes("@")) throw new BadRequestException("Некорректный email");
+    if (payload.password && payload.password.trim().length < 8) {
+      throw new BadRequestException("Пароль должен быть не короче 8 символов");
+    }
+
+    if (rawEmail) {
+      const existing = await this.prisma.user.findUnique({ where: { email: rawEmail } });
+      if (existing) throw new ConflictException("Email уже используется");
+    }
+
+    const email = rawEmail || `child-${randomUUID()}@atmosfera.local`;
+    const password = payload.password?.trim() || randomUUID();
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email,
+          passwordHash: await bcrypt.hash(password, 10),
+          role: UserRole.PLAYER,
+          firstName,
+          lastName,
+          country,
+          city
+        }
+      });
+      const player = await tx.player.create({
+        data: {
+          userId: user.id,
+          firstName,
+          lastName,
+          middleName,
+          dateOfBirth,
+          nationality,
+          country,
+          city,
+          position,
+          isPublicInSearch: false,
+          isActive: true
+        }
+      });
+      await tx.playerParent.create({
+        data: {
+          playerId: player.id,
+          parentId: parent.id,
+          relationType: payload.relationType?.trim() || null
+        }
+      });
+      return player;
+    });
+
+    return {
+      id: created.id,
+      firstName: created.firstName,
+      lastName: created.lastName,
+      position: created.position,
+      dateOfBirth: created.dateOfBirth,
+      city: created.city,
+      country: created.country
+    };
+  }
+
+  async unlinkParentChild(userId: string, playerId: string) {
+    const parent = await this.prisma.parentProfile.findUnique({ where: { userId } });
+    if (!parent) throw new ForbiddenException("Нет доступа");
+    const link = await this.prisma.playerParent.findUnique({
+      where: { playerId_parentId: { playerId, parentId: parent.id } }
+    });
+    if (!link) throw new NotFoundException("Связь не найдена");
+    await this.prisma.playerParent.delete({
+      where: { playerId_parentId: { playerId, parentId: parent.id } }
+    });
+    return { message: "Профиль отвязан" };
   }
 
   async search(filters: SearchFilters, pagination: Pagination, user?: { id: string; role: UserRole }) {
@@ -372,6 +489,14 @@ export class PlayersService {
       };
     }
     return agentCard;
+  }
+
+  private async ensureParentProfile(userId: string) {
+    const existing = await this.prisma.parentProfile.findUnique({ where: { userId } });
+    if (existing) return existing;
+    return this.prisma.parentProfile.create({
+      data: { userId }
+    });
   }
 
   async addStatLine(playerId: string, payload: any, user: { id: string; role: UserRole }) {
