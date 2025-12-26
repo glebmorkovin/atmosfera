@@ -46,6 +46,18 @@ export class PlayersController {
     return this.playersService.listParentChildren(user.id);
   }
 
+  @Post("parent/children")
+  @Roles("PARENT")
+  createParentChild(@CurrentUser() user: any, @Body() payload: any) {
+    return this.playersService.createParentChild(user.id, payload);
+  }
+
+  @Delete("parent/children/:playerId")
+  @Roles("PARENT")
+  unlinkParentChild(@CurrentUser() user: any, @Param("playerId") playerId: string) {
+    return this.playersService.unlinkParentChild(user.id, playerId);
+  }
+
   @Get("search")
   @Roles("PLAYER", "PARENT", "SCOUT", "CLUB", "ADMIN")
   searchPlayers(

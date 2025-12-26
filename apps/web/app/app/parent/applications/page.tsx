@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
 
 type Application = {
   id: string;
@@ -13,38 +13,59 @@ type Application = {
   vacancy: { id: string; title: string; status: string; clubUser?: { firstName?: string; lastName?: string } };
 };
 
+type ChildProfile = {
+  id: string;
+  firstName: string;
+  lastName: string;
+};
+
 export default function ParentApplicationsPage() {
   const [items, setItems] = useState<Application[]>([]);
+  const [children, setChildren] = useState<ChildProfile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingChildren, setLoadingChildren] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [selectedPlayerId, setSelectedPlayerId] = useState("all");
 
-  const load = async () => {
+  const loadChildren = async () => {
+    setLoadingChildren(true);
+    try {
+      const data = await apiFetch<ChildProfile[]>("/players/parent/children", { auth: true });
+      setChildren(data);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Не удалось загрузить список детей");
+    } finally {
+      setLoadingChildren(false);
+    }
+  };
+
+  const load = async (playerId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiFetch<Application[]>("/parent/applications", { auth: true });
+      const url = playerId === "all" ? "/parent/applications" : `/parent/applications?playerId=${playerId}`;
+      const data = await apiFetch<Application[]>(url, { auth: true });
       setItems(data);
-    } catch {
-      setError("Не удалось загрузить отклики");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Не удалось загрузить отклики");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    load();
+    loadChildren();
   }, []);
 
-  const uniquePlayers = useMemo(() => {
-    const map = new Map<string, string>();
-    items.forEach((app) => {
-      if (!app.player?.id) return;
-      map.set(app.player.id, `${app.player.firstName || ""} ${app.player.lastName || ""}`.trim() || "Игрок");
-    });
-    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
-  }, [items]);
+  useEffect(() => {
+    load(selectedPlayerId);
+  }, [selectedPlayerId]);
+
+  const uniquePlayers = useMemo(
+    () => children.map((child) => ({ id: child.id, name: `${child.firstName} ${child.lastName}`.trim() })),
+    [children]
+  );
 
   const filteredItems = useMemo(() => {
     if (selectedPlayerId === "all") return items;
@@ -57,9 +78,9 @@ export default function ParentApplicationsPage() {
     try {
       await apiFetch(`/applications/${id}/withdraw`, { method: "POST", auth: true });
       setMessage("Отклик отозван");
-      load();
-    } catch {
-      setError("Не удалось отозвать отклик");
+      load(selectedPlayerId);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Не удалось отозвать отклик");
     }
   };
 
@@ -98,7 +119,9 @@ export default function ParentApplicationsPage() {
           </div>
         )}
 
-        {filteredItems.length === 0 && !loading && (
+        {loadingChildren && <div className="card text-white/70">Загружаем список детей...</div>}
+
+        {filteredItems.length === 0 && !loading && !loadingChildren && (
           <div className="card text-white/70">Откликов пока нет.</div>
         )}
 
