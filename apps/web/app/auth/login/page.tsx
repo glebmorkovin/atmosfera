@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
 import { getStoredRole, roleHome, saveRole, saveTokens } from "@/lib/auth";
 
 export default function LoginPage() {
@@ -11,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -30,6 +31,10 @@ export default function LoginPage() {
     event.preventDefault();
     setMessage(null);
     setError(null);
+    if (!email.trim() || !password.trim()) {
+      setError({ message: "Введите email и пароль." });
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiFetch<{ accessToken: string; refreshToken?: string; user?: { role?: string } }>("/auth/login", {
@@ -50,7 +55,11 @@ export default function LoginPage() {
       }
       setMessage("Вход выполнен. Перенаправляем...");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка входа");
+      if (err instanceof ApiError) {
+        setError({ message: err.message || "Ошибка входа", requestId: err.requestId });
+      } else {
+        setError({ message: err instanceof Error ? err.message : "Ошибка входа" });
+      }
     } finally {
       setLoading(false);
     }
@@ -96,8 +105,8 @@ export default function LoginPage() {
           {loading ? "Входим..." : "Войти"}
         </button>
       </form>
-      {message && <p className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">{message}</p>}
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-200">{error}</p>}
+      {message && <Alert variant="success" description={message} className="mt-4" />}
+      {error && <Alert variant="error" description={error.message} requestId={error.requestId} className="mt-4" />}
       <p className="mt-6 text-center text-sm text-white/70">
         Нет аккаунта?{" "}
         <Link href="/auth/register" className="text-primary">

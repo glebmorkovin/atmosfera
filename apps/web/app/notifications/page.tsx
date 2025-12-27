@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type Notification = {
   id: string;
@@ -62,8 +63,6 @@ export default function NotificationsPage() {
             <p className="pill mb-2">Уведомления</p>
             <h1 className="text-3xl font-bold">События профиля и шортлистов</h1>
             <p className="text-white/70">Просмотры профиля, добавления в шортлист, модерация.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <div className="flex gap-3">
             <button className="ghost-btn px-4 py-2 text-sm" onClick={markAll}>
@@ -72,8 +71,11 @@ export default function NotificationsPage() {
           </div>
         </div>
 
+        {error && <Alert variant="warning" description={error} />}
+        {loading && <LoadingState title="Загружаем уведомления..." subtitle="Это может занять несколько секунд." lines={4} />}
+
         {items.length === 0 && !loading && (
-          <div className="card text-white/70">Уведомлений нет или нет доступа.</div>
+          <div className="card text-white/70">Пока нет новых уведомлений. Проверьте позже или обновите страницу.</div>
         )}
 
         <div className="grid gap-3">
