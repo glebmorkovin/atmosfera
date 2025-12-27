@@ -1,8 +1,12 @@
 import { NestFactory } from "@nestjs/core";
 import { Logger, ValidationPipe } from "@nestjs/common";
+import type { NextFunction, Request, Response } from "express";
+import { randomUUID } from "crypto";
 import { AppModule } from "./app.module";
 import { PrismaService } from "./prisma/prisma.service";
 import { seedDemoUsers } from "./seed-demo";
+import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -42,6 +46,13 @@ async function bootstrap() {
     credentials: true
   });
   app.setGlobalPrefix("api");
+  app.use((req: Request & { requestId?: string }, res: Response, next: NextFunction) => {
+    const incomingId = req.headers["x-request-id"];
+    const requestId = typeof incomingId === "string" && incomingId ? incomingId : randomUUID();
+    req.requestId = requestId;
+    res.setHeader("x-request-id", requestId);
+    next();
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -49,6 +60,8 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true }
     })
   );
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

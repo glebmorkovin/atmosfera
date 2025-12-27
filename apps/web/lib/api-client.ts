@@ -2,11 +2,13 @@ import { clearAuth } from "@/lib/auth";
 
 export class ApiError extends Error {
   status: number;
+  requestId?: string;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, requestId?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.requestId = requestId;
   }
 }
 
@@ -52,18 +54,36 @@ const clearTokens = () => {
   clearAuth();
 };
 
+const createRequestId = () => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `req_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+};
+
 async function refreshTokens() {
   syncTokens();
   if (!refreshToken) throw new Error("No refresh token");
+  const requestId = createRequestId();
   const res = await fetch(`${API_BASE}/auth/refresh`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-request-id": requestId },
     body: JSON.stringify({ refreshToken })
   });
   if (!res.ok) {
     clearTokens();
-    const text = await res.text();
-    throw new ApiError(res.status, text || "Refresh failed");
+    const contentType = res.headers.get("content-type") || "";
+    let message = "Refresh failed";
+    let errorRequestId: string | undefined;
+    if (contentType.includes("application/json")) {
+      const payload = await res.json().catch(() => null);
+      message = payload?.message || payload?.error || message;
+      errorRequestId = payload?.requestId;
+    } else {
+      const text = await res.text();
+      message = text || message;
+    }
+    throw new ApiError(res.status, message, errorRequestId);
   }
   const data = await res.json();
   setTokens(data.accessToken, data.refreshToken);
@@ -73,7 +93,12 @@ async function refreshTokens() {
 export async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
   syncTokens();
   const url = path.startsWith("http") ? path : `${API_BASE}${path.startsWith("/") ? "" : "/"}${path}`;
-  const headers: Record<string, string> = { "Content-Type": "application/json", ...(options.headers || {}) };
+  const requestId = createRequestId();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-request-id": requestId,
+    ...(options.headers || {})
+  };
   if (options.auth && accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }
@@ -88,8 +113,18 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
       return doRequest(newAccess);
     }
     if (!res.ok) {
-      const text = await res.text();
-      throw new ApiError(res.status, text || res.statusText);
+      const contentType = res.headers.get("content-type") || "";
+      let message = res.statusText;
+      let errorRequestId: string | undefined = res.headers.get("x-request-id") || undefined;
+      if (contentType.includes("application/json")) {
+        const payload = await res.json().catch(() => null);
+        message = payload?.message || payload?.error || message;
+        errorRequestId = payload?.requestId || errorRequestId;
+      } else {
+        const text = await res.text();
+        message = text || message;
+      }
+      throw new ApiError(res.status, message, errorRequestId);
     }
     if (res.status === 204) return null as any;
     return res.json();
