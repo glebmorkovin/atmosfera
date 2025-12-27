@@ -22,35 +22,27 @@ type FetchOptions = {
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "https://atmosfera-api.onrender.com/api";
 
 let accessToken: string | null = null;
-let refreshToken: string | null = null;
 
 if (typeof window !== "undefined") {
   accessToken = localStorage.getItem("accessToken");
-  refreshToken = localStorage.getItem("refreshToken");
 }
 
 const syncTokens = () => {
   if (typeof window === "undefined") return;
   accessToken = localStorage.getItem("accessToken");
-  refreshToken = localStorage.getItem("refreshToken");
 };
 
-const setTokens = (access?: string, refresh?: string) => {
+const setTokens = (access?: string) => {
   if (typeof window === "undefined") return;
   if (access) {
     accessToken = access;
     localStorage.setItem("accessToken", access);
-  }
-  if (refresh) {
-    refreshToken = refresh;
-    localStorage.setItem("refreshToken", refresh);
   }
 };
 
 const clearTokens = () => {
   if (typeof window === "undefined") return;
   accessToken = null;
-  refreshToken = null;
   clearAuth();
 };
 
@@ -63,12 +55,12 @@ const createRequestId = () => {
 
 async function refreshTokens() {
   syncTokens();
-  if (!refreshToken) throw new Error("No refresh token");
   const requestId = createRequestId();
   const res = await fetch(`${API_BASE}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-request-id": requestId },
-    body: JSON.stringify({ refreshToken })
+    credentials: "include",
+    body: JSON.stringify({})
   });
   if (!res.ok) {
     clearTokens();
@@ -86,7 +78,7 @@ async function refreshTokens() {
     throw new ApiError(res.status, message, errorRequestId);
   }
   const data = await res.json();
-  setTokens(data.accessToken, data.refreshToken);
+  setTokens(data.accessToken);
   return data.accessToken;
 }
 
@@ -106,9 +98,10 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     const res = await fetch(url, {
       method: options.method || "GET",
       headers: token ? { ...headers, Authorization: `Bearer ${token}` } : headers,
+      credentials: "include",
       body: options.body ? JSON.stringify(options.body) : undefined
     });
-    if (res.status === 401 && options.auth && refreshToken) {
+    if (res.status === 401 && options.auth) {
       const newAccess = await refreshTokens();
       return doRequest(newAccess);
     }
@@ -133,22 +126,20 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
 }
 
 export function getTokens() {
-  return { accessToken, refreshToken };
+  return { accessToken };
 }
 
 export async function logoutClient() {
   if (typeof window === "undefined") return;
-  const storedRefresh = localStorage.getItem("refreshToken");
-  if (storedRefresh) {
-    try {
-      await fetch(`${API_BASE}/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken: storedRefresh })
-      });
-    } catch {
-      // ignore network errors on logout
-    }
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({})
+    });
+  } catch {
+    // ignore network errors on logout
   }
   clearTokens();
 }

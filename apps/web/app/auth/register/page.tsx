@@ -44,12 +44,12 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      const data = await apiFetch<{ accessToken: string; refreshToken: string }>("/auth/register", {
+      const data = await apiFetch<{ accessToken: string; refreshToken?: string }>("/auth/register", {
         method: "POST",
         body: { email, password, role, firstName, lastName, country, city }
       });
       if (typeof window !== "undefined") {
-        saveTokens(data.accessToken, data.refreshToken);
+        saveTokens(data.accessToken);
         let nextRole: string | undefined = role;
         try {
           const me = await apiFetch<{ role: string }>("/users/me", { auth: true });

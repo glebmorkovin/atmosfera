@@ -20,14 +20,20 @@ async function bootstrap() {
       logger.error("Failed to seed demo users", err instanceof Error ? err.stack : undefined);
     }
   }
-  const corsOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://127.0.0.1:3000,https://*.vercel.app")
+  const isProd = process.env.NODE_ENV === "production";
+  const defaultOrigins = isProd
+    ? "https://atmosfera-web.vercel.app"
+    : "http://localhost:3000,http://127.0.0.1:3000,https://*.vercel.app";
+  const corsOrigins = (process.env.CORS_ORIGINS || defaultOrigins)
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const effectiveOrigins = isProd ? corsOrigins.filter((origin) => !origin.includes("*")) : corsOrigins;
+  const safeOrigins = effectiveOrigins.length ? effectiveOrigins : ["https://atmosfera-web.vercel.app"];
 
   const isAllowedOrigin = (origin?: string) => {
     if (!origin) return true;
-    return corsOrigins.some((allowed) => {
+    return safeOrigins.some((allowed) => {
       if (allowed.includes("*")) {
         const regex = new RegExp(`^${allowed.replace(/\./g, "\\.").replace(/\*/g, ".*")}$`);
         return regex.test(origin);
@@ -45,6 +51,7 @@ async function bootstrap() {
     },
     credentials: true
   });
+  app.getHttpAdapter().getInstance().set("trust proxy", 1);
   app.setGlobalPrefix("api");
   app.use((req: Request & { requestId?: string }, res: Response, next: NextFunction) => {
     const incomingId = req.headers["x-request-id"];
@@ -53,6 +60,35 @@ async function bootstrap() {
     res.setHeader("x-request-id", requestId);
     next();
   });
+  const rateLimits = new Map<string, { count: number; resetAt: number }>();
+  const rateWindowMs = 60_000;
+  const rateLimitMax = 10;
+  const rateLimit = (req: Request & { requestId?: string }, res: Response, next: NextFunction) => {
+    const forwarded = req.headers["x-forwarded-for"];
+    const ip = typeof forwarded === "string" && forwarded.length ? forwarded.split(",")[0].trim() : req.ip;
+    const key = `${ip}:${req.path}`;
+    const now = Date.now();
+    const entry = rateLimits.get(key);
+    if (!entry || entry.resetAt <= now) {
+      rateLimits.set(key, { count: 1, resetAt: now + rateWindowMs });
+      return next();
+    }
+    if (entry.count >= rateLimitMax) {
+      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+      res.setHeader("Retry-After", String(retryAfter));
+      return res.status(429).json({
+        statusCode: 429,
+        error: "Too Many Requests",
+        message: "Слишком много попыток. Попробуйте позже.",
+        requestId: req.requestId,
+        timestamp: new Date().toISOString()
+      });
+    }
+    entry.count += 1;
+    return next();
+  };
+  app.use("/api/auth/login", rateLimit);
+  app.use("/api/auth/reset-request", rateLimit);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
