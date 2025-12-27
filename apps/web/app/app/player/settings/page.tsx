@@ -4,9 +4,9 @@ export default function PlayerSettingsPage() {
   return (
     <EmptyState
       title="Настройки аккаунта"
-      description="Данных пока нет. Настройки профиля и безопасности появятся здесь."
-      actionHref="/app/player/dashboard"
-      actionLabel="Вернуться к дашборду"
+      description="Здесь появятся настройки профиля, безопасности и уведомлений."
+      actionHref="/app/player/profile"
+      actionLabel="Перейти к профилю"
     />
   );
 }

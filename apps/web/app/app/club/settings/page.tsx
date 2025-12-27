@@ -4,9 +4,9 @@ export default function ClubSettingsPage() {
   return (
     <EmptyState
       title="Настройки клуба"
-      description="Данных пока нет. Настройки организации появятся здесь."
-      actionHref="/app/club/dashboard"
-      actionLabel="Вернуться к дашборду"
+      description="Здесь появятся настройки команды, уведомлений и доступа."
+      actionHref="/app/club/search"
+      actionLabel="Перейти к поиску"
     />
   );
 }

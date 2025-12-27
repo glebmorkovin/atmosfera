@@ -18,7 +18,7 @@ export default function AppUnauthorizedPage() {
         <div className="card space-y-3 text-center">
           <p className="pill w-fit mx-auto">Доступ ограничен</p>
           <h1 className="text-2xl font-semibold">Нет прав на просмотр</h1>
-          <p className="text-white/70">Проверьте роль и попробуйте открыть нужный раздел.</p>
+          <p className="text-white/70">Эта страница недоступна для вашей роли. Вернитесь на главную.</p>
           <Link href={home} className="primary-btn mx-auto w-fit px-6 py-2">
             На главную
           </Link>

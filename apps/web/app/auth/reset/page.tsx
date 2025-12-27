@@ -20,7 +20,7 @@ export default function ResetPage() {
         method: "POST",
         body: { email }
       });
-      setMessage("Если такой email есть, отправили ссылку (токен появится в консоли API).");
+      setMessage("Если адрес зарегистрирован, мы отправим ссылку на почту.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка запроса");
     } finally {
@@ -32,8 +32,8 @@ export default function ResetPage() {
     <div className="card">
       <div className="mb-6 space-y-2">
         <p className="pill w-fit">Восстановление</p>
-        <h1 className="text-2xl font-semibold">Сброс пароля</h1>
-        <p className="text-sm text-white/70">Введите email для запроса ссылки на сброс.</p>
+        <h1 className="text-2xl font-semibold">Восстановить пароль</h1>
+        <p className="text-sm text-white/70">Если адрес зарегистрирован, мы отправим ссылку на почту.</p>
       </div>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="space-y-1 text-sm text-white/80">

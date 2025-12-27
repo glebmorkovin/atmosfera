@@ -48,7 +48,7 @@ export default function LoginPage() {
         saveRole(role);
         redirectByRole(role);
       }
-      setMessage("Успех: токены сохранены. Перенаправляем...");
+      setMessage("Вход выполнен. Перенаправляем...");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка входа");
     } finally {
@@ -60,10 +60,8 @@ export default function LoginPage() {
     <div className="card">
       <div className="mb-6 space-y-2">
         <p className="pill w-fit">Вход</p>
-        <h1 className="text-2xl font-semibold">Войти в аккаунт</h1>
-        <p className="text-sm text-white/70">
-          Демо-логины: player@example.com / scout@example.com / admin@example.com (пароль: password123).
-        </p>
+        <h1 className="text-2xl font-semibold">Войти в кабинет</h1>
+        <p className="text-sm text-white/70">Введите email и пароль, чтобы продолжить работу.</p>
       </div>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <label className="space-y-1 text-sm text-white/80">
@@ -103,7 +101,7 @@ export default function LoginPage() {
       <p className="mt-6 text-center text-sm text-white/70">
         Нет аккаунта?{" "}
         <Link href="/auth/register" className="text-primary">
-          Зарегистрироваться
+          Зарегистрируйтесь
         </Link>
       </p>
     </div>

@@ -9,7 +9,7 @@ export default function AdminUnauthorizedPage() {
         <div className="card space-y-3 text-center">
           <p className="pill w-fit mx-auto">Доступ ограничен</p>
           <h1 className="text-2xl font-semibold">Нет прав на просмотр</h1>
-          <p className="text-white/70">Войдите как администратор или вернитесь в админку.</p>
+          <p className="text-white/70">Нужны права администратора. Вернитесь на главную страницу админки.</p>
           <Link href="/admin/dashboard" className="primary-btn mx-auto w-fit px-6 py-2">
             На главную
           </Link>

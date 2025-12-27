@@ -4,9 +4,9 @@ export default function ParentSettingsPage() {
   return (
     <EmptyState
       title="Настройки аккаунта"
-      description="Данных пока нет. Настройки профиля появятся здесь."
-      actionHref="/app/parent/dashboard"
-      actionLabel="Вернуться к дашборду"
+      description="Управление профилем и уведомлениями появится здесь."
+      actionHref="/app/parent/children"
+      actionLabel="Перейти к детям"
     />
   );
 }

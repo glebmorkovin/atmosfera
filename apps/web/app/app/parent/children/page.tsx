@@ -91,7 +91,7 @@ export default function ParentChildrenPage() {
           email: form.email || undefined
         }
       });
-      setMessage("Профиль ребёнка создан");
+      setMessage("Профиль ребёнка создан.");
       resetForm();
       setShowForm(false);
       load();
@@ -108,7 +108,7 @@ export default function ParentChildrenPage() {
     setMessage(null);
     try {
       await apiFetch(`/players/parent/children/${playerId}`, { method: "DELETE", auth: true });
-      setMessage("Профиль отвязан");
+      setMessage("Профиль отвязан.");
       load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Не удалось отвязать профиль");
@@ -230,7 +230,7 @@ export default function ParentChildrenPage() {
         )}
 
         {children.length === 0 && !loading && !showForm && (
-          <div className="card text-white/70">Пока нет профилей. Создайте первый профиль ребёнка.</div>
+          <div className="card text-white/70">Добавьте первого ребёнка, чтобы начать работу с профилями.</div>
         )}
 
         <div className="grid gap-4">

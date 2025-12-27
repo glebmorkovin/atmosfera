@@ -85,7 +85,7 @@ export default function AdminVacanciesPage() {
       </div>
 
       {!hasItems && !loading && (
-        <div className="card text-white/70">Вакансий в этом статусе пока нет.</div>
+        <div className="card text-white/70">Вакансий в этом статусе пока нет. Проверьте другие статусы.</div>
       )}
 
       <div className="grid gap-4">

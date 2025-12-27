@@ -124,7 +124,7 @@ export default function ClubVacanciesPage() {
         </div>
 
         {filtered.length === 0 && !loading && (
-          <div className="card text-white/70">Вакансий в этом разделе пока нет.</div>
+          <div className="card text-white/70">Вакансий пока нет. Создайте первую, чтобы начать подбор.</div>
         )}
 
         <div className="grid gap-4">
