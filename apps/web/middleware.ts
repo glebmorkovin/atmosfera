@@ -28,11 +28,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hostname = request.nextUrl.hostname;
-  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
-  const isProd = !isLocal && process.env.NODE_ENV !== "development";
-  if (pathname.startsWith("/demo") && isProd) {
-    return new NextResponse("Not Found", { status: 404 });
+  const isProd = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
+  if (isProd && pathname.startsWith("/demo")) {
+    return new Response("Not Found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store" }
+    });
   }
 
   const protectedPrefixes = ["/app", "/admin", "/demo", "/notifications"];
@@ -68,5 +69,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"]
+  matcher: ["/demo/:path*", "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"]
 };
