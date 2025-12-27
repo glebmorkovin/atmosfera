@@ -28,7 +28,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const isProd = process.env.VERCEL_ENV ? process.env.VERCEL_ENV === "production" : process.env.NODE_ENV === "production";
+  const hostname = request.nextUrl.hostname;
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  const isProd = !isLocal && process.env.NODE_ENV !== "development";
   if (pathname.startsWith("/demo") && isProd) {
     return new NextResponse("Not Found", { status: 404 });
   }
