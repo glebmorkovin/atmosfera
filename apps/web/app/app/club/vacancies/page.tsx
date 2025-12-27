@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type Vacancy = {
   id: string;
@@ -96,9 +98,6 @@ export default function ClubVacanciesPage() {
             <p className="pill mb-2">Клуб • Вакансии</p>
             <h1 className="text-3xl font-bold">Вакансии клуба</h1>
             <p className="text-white/70">Создавайте и модерируйте объявления о просмотрах.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <div className="flex gap-3">
             <Link href="/app/club/vacancies/new" className="primary-btn">
@@ -123,8 +122,12 @@ export default function ClubVacanciesPage() {
           ))}
         </div>
 
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && <LoadingState title="Загружаем вакансии..." subtitle="Собираем актуальные статусы." lines={4} />}
+
         {filtered.length === 0 && !loading && (
-          <div className="card text-white/70">Вакансий пока нет. Создайте первую, чтобы начать подбор.</div>
+          <div className="card text-white/70">Пока нет вакансий в этом статусе. Создайте первую публикацию.</div>
         )}
 
         <div className="grid gap-4">

@@ -2,18 +2,23 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
 
 export default function ResetPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setMessage(null);
     setError(null);
+    if (!email.trim()) {
+      setError({ message: "Введите email, чтобы получить ссылку." });
+      return;
+    }
     setLoading(true);
     try {
       await apiFetch("/auth/reset-request", {
@@ -22,7 +27,11 @@ export default function ResetPage() {
       });
       setMessage("Если адрес зарегистрирован, мы отправим ссылку на почту.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка запроса");
+      if (err instanceof ApiError) {
+        setError({ message: err.message || "Ошибка запроса", requestId: err.requestId });
+      } else {
+        setError({ message: err instanceof Error ? err.message : "Ошибка запроса" });
+      }
     } finally {
       setLoading(false);
     }
@@ -51,8 +60,8 @@ export default function ResetPage() {
           {loading ? "Отправляем..." : "Отправить ссылку"}
         </button>
       </form>
-      {message && <p className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">{message}</p>}
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-200">{error}</p>}
+      {message && <Alert variant="success" description={message} className="mt-4" />}
+      {error && <Alert variant="error" description={error.message} requestId={error.requestId} className="mt-4" />}
       <p className="mt-6 text-center text-sm text-white/70">
         Вспомнили пароль?{" "}
         <Link href="/auth/login" className="text-primary">

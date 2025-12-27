@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
 import { getStoredRole, UserRole } from "@/lib/auth";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type Vacancy = {
   id: string;
@@ -116,14 +118,18 @@ export default function VacancyDetailPage() {
             <p className="text-white/70">
               {vacancy?.locationCity || "Город"} • {vacancy?.locationCountry || "Страна"}
             </p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <Link href="/vacancies" className="ghost-btn">
             Назад
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && !vacancy && <LoadingState title="Загружаем вакансию..." subtitle="Проверяем данные публикации." lines={4} />}
+        {!loading && !vacancy && !error && (
+          <div className="card text-white/70">Вакансия недоступна или снята с публикации.</div>
+        )}
 
         {vacancy && (
           <div className="grid gap-6 lg:grid-cols-3">

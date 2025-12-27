@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ApiError, apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type StatLine = {
   id: string;
@@ -189,14 +191,15 @@ export default function ClubPlayerProfilePage() {
                 {player.position} • {player.currentClub?.name || "Клуб"} • {player.currentLeague?.name || "Лига"}
               </p>
             )}
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <Link href="/app/club/search" className="ghost-btn">
             Назад к поиску
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && !player && <LoadingState title="Загружаем профиль..." subtitle="Подготовка карточки игрока." lines={4} />}
 
         {!player && !loading && <div className="card text-white/70">Профиль не найден.</div>}
 

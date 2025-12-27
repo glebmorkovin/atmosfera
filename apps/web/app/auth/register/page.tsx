@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { apiFetch } from "@/lib/api-client";
+import { ApiError, apiFetch } from "@/lib/api-client";
 import { getStoredRole, roleHome, saveRole, saveTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/alert";
 
 const roles = [
   { value: "player", label: "Игрок" },
@@ -24,7 +25,7 @@ export default function RegisterPage() {
   const [password2, setPassword2] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -38,8 +39,16 @@ export default function RegisterPage() {
     event.preventDefault();
     setMessage(null);
     setError(null);
+    if (!email.trim() || !firstName.trim() || !lastName.trim()) {
+      setError({ message: "Заполните email, имя и фамилию." });
+      return;
+    }
+    if (!password.trim() || password.length < 8) {
+      setError({ message: "Пароль должен быть не короче 8 символов." });
+      return;
+    }
     if (password !== password2) {
-      setError("Пароли не совпадают");
+      setError({ message: "Пароли не совпадают." });
       return;
     }
     setLoading(true);
@@ -58,10 +67,17 @@ export default function RegisterPage() {
           // fallback to role from form
         }
         saveRole(nextRole);
+        if (nextRole) {
+          router.push(roleHome(nextRole));
+        }
       }
       setMessage("Аккаунт создан. Перенаправляем в кабинет.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка регистрации");
+      if (err instanceof ApiError) {
+        setError({ message: err.message || "Ошибка регистрации", requestId: err.requestId });
+      } else {
+        setError({ message: err instanceof Error ? err.message : "Ошибка регистрации" });
+      }
     } finally {
       setLoading(false);
     }
@@ -175,8 +191,8 @@ export default function RegisterPage() {
           {loading ? "Отправляем..." : "Зарегистрироваться"}
         </button>
       </form>
-      {message && <p className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-200">{message}</p>}
-      {error && <p className="mt-4 rounded-lg bg-red-500/10 px-4 py-2 text-sm text-red-200">{error}</p>}
+      {message && <Alert variant="success" description={message} className="mt-4" />}
+      {error && <Alert variant="error" description={error.message} requestId={error.requestId} className="mt-4" />}
       <p className="mt-6 text-center text-sm text-white/70">
         Уже есть аккаунт?{" "}
         <Link href="/auth/login" className="text-primary">

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type PlayerProfile = {
   id: string;
@@ -82,7 +84,7 @@ export default function PlayerProfilePage() {
       setHistories(full.clubHistory || []);
       setAchievements(full.achievements || []);
     } catch {
-      setError("Не удалось загрузить профиль (нужен вход и запущенный API)");
+      setError("Не удалось загрузить профиль. Проверьте вход и попробуйте позже.");
     } finally {
       setLoading(false);
     }
@@ -136,9 +138,17 @@ export default function PlayerProfilePage() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
-    setLoading(true);
     setError(null);
     setMessage(null);
+    if (!profile.firstName?.trim() || !profile.lastName?.trim()) {
+      setError("Укажите имя и фамилию игрока.");
+      return;
+    }
+    if (!profile.position?.trim()) {
+      setError("Укажите игровую позицию.");
+      return;
+    }
+    setLoading(true);
     try {
       await apiFetch(`/players/${profile.id}`, { method: "PUT", body: profile, auth: true });
       setMessage("Профиль сохранён");
@@ -229,14 +239,15 @@ export default function PlayerProfilePage() {
           <div>
             <p className="pill mb-2">Игрок • Профиль</p>
             <h1 className="text-3xl font-bold">Редактирование профиля</h1>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <Link href="/app/player/dashboard" className="ghost-btn">
             К дашборду
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && !profile && <LoadingState title="Загружаем профиль..." subtitle="Подготавливаем форму редактирования." lines={4} />}
 
         {!profile && !loading && <div className="card text-white/70">Профиль не найден.</div>}
 

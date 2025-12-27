@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { ApiError, apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type ChildProfile = {
   id: string;
@@ -77,6 +79,11 @@ export default function ParentChildrenPage() {
     setSaving(true);
     setError(null);
     setMessage(null);
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.dateOfBirth || !form.position) {
+      setError("Заполните обязательные поля профиля ребёнка.");
+      setSaving(false);
+      return;
+    }
     try {
       await apiFetch("/players/parent/children", {
         method: "POST",
@@ -123,9 +130,6 @@ export default function ParentChildrenPage() {
             <p className="pill mb-2">Родитель • Дети</p>
             <h1 className="text-3xl font-bold">Профили детей</h1>
             <p className="text-white/70">Добавляйте и управляйте профилями детей в одном месте.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <div className="flex gap-3">
             <button className="primary-btn" onClick={() => setShowForm((prev) => !prev)}>
@@ -136,6 +140,10 @@ export default function ParentChildrenPage() {
             </Link>
           </div>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && <LoadingState title="Загружаем профили..." subtitle="Собираем данные по детям." lines={4} />}
 
         {showForm && (
           <form onSubmit={submit} className="card grid gap-4 md:grid-cols-2">

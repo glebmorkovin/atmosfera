@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
 
 const vacancyTypes = [
   { value: "TRYOUT", label: "Просмотр" },
@@ -54,8 +55,21 @@ export default function ClubVacancyNewPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const validateAgeRange = () => {
+    const from = toNumber(form.ageFrom);
+    const to = toNumber(form.ageTo);
+    if (from !== undefined && to !== undefined && from > to) {
+      setError("Возраст «от» не может быть больше «до».");
+      return false;
+    }
+    return true;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateAgeRange()) {
+      return;
+    }
     setLoading(true);
     setError(null);
     setMessage(null);
@@ -97,14 +111,14 @@ export default function ClubVacancyNewPage() {
             <p className="pill mb-2">Клуб • Вакансии</p>
             <h1 className="text-3xl font-bold">Создать вакансию</h1>
             <p className="text-white/70">Заполните описание и сохраните черновик.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Сохранение...</p>}
           </div>
           <Link href="/app/club/vacancies" className="ghost-btn">
             К списку
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
 
         <form className="space-y-6" onSubmit={submit}>
           <div className="card grid gap-4 md:grid-cols-2">
@@ -230,7 +244,7 @@ export default function ClubVacancyNewPage() {
 
           <div className="flex items-center gap-3">
             <button className="primary-btn" type="submit" disabled={loading}>
-              Сохранить черновик
+              {loading ? "Сохраняем..." : "Сохранить черновик"}
             </button>
             <Link href="/app/club/vacancies" className="ghost-btn">
               Отмена

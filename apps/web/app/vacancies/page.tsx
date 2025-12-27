@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type Vacancy = {
   id: string;
@@ -46,12 +48,13 @@ export default function VacanciesPage() {
           <p className="pill mb-2">Вакансии</p>
           <h1 className="text-3xl font-bold">Открытые вакансии клубов</h1>
           <p className="text-white/70">Список опубликованных вакансий и просмотр условий.</p>
-          {error && <p className="text-sm text-amber-300">{error}</p>}
-          {loading && <p className="text-sm text-white/60">Загрузка...</p>}
         </div>
 
+        {error && <Alert variant="warning" description={error} />}
+        {loading && <LoadingState title="Загружаем вакансии..." subtitle="Проверяем актуальные публикации клубов." lines={4} />}
+
         {items.length === 0 && !loading && (
-          <div className="card text-white/70">Подходящих вакансий пока нет.</div>
+          <div className="card text-white/70">Пока нет активных вакансий. Возвращайтесь позже — список обновляется регулярно.</div>
         )}
 
         <div className="grid gap-4 md:grid-cols-2">

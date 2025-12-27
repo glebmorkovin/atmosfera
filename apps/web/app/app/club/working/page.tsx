@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type WorkingCard = {
   id: string;
@@ -50,13 +52,14 @@ export default function ClubWorkingPage() {
             <p className="pill mb-2">Клуб • Кандидаты</p>
             <h1 className="text-3xl font-bold">Кандидаты в работе</h1>
             <p className="text-white/70">Игроки, с которыми подтверждено сотрудничество.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
           </div>
           <Link href="/app/club/search" className="ghost-btn">
             Перейти к поиску
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {loading && <LoadingState title="Загружаем кандидатов..." subtitle="Проверяем обновления по игрокам." lines={4} />}
 
         {cards.length === 0 && !loading && (
           <div className="card text-white/70">Пока нет кандидатов. Отправьте запрос или примите входящий.</div>

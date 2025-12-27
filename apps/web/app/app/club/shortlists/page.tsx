@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type Shortlist = {
   id: string;
@@ -28,7 +30,7 @@ export default function ClubShortlistsPage() {
       const data = await apiFetch<Shortlist[]>("/shortlists", { auth: true });
       setShortlists(data);
     } catch {
-      setError("Нужен вход (клуб) и запущенный API");
+      setError("Нужен вход, чтобы открыть шортлисты клуба.");
     } finally {
       setLoading(false);
     }
@@ -40,6 +42,11 @@ export default function ClubShortlistsPage() {
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (!name.trim()) {
+      setError("Укажите название шортлиста.");
+      return;
+    }
     try {
       await apiFetch("/shortlists", { method: "POST", body: { name, description }, auth: true });
       setName("");
@@ -93,14 +100,15 @@ export default function ClubShortlistsPage() {
             <p className="pill mb-2">Клуб • Шортлисты</p>
             <h1 className="text-3xl font-bold">Подборки кандидатов</h1>
             <p className="text-white/70">Сравнивайте игроков и выгружайте CSV.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
           </div>
           <Link href="/app/club/dashboard" className="ghost-btn">
             Назад
           </Link>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
+        {loading && <LoadingState title="Загружаем шортлисты..." subtitle="Собираем подборки клуба." lines={4} />}
 
         <form className="card grid gap-3 md:grid-cols-3" onSubmit={create}>
           <input
@@ -159,7 +167,7 @@ export default function ClubShortlistsPage() {
             </div>
           ))}
           {!loading && shortlists.length === 0 && (
-            <div className="card md:col-span-2 text-white/70">Пока нет шортлистов. Создайте первый список.</div>
+            <div className="card md:col-span-2 text-white/70">Пока нет шортлистов. Создайте первую подборку кандидатов.</div>
           )}
         </div>
       </div>

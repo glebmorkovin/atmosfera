@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ApiError, apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
+import { LoadingState } from "@/components/loading-state";
 
 type PlayerCard = {
   id: string;
@@ -224,13 +226,16 @@ export default function ScoutSearchRealPage() {
             <p className="pill mb-2">Поиск игроков</p>
             <h1 className="text-3xl font-bold">Поиск игроков</h1>
             <p className="text-white/70">Фильтруйте по позиции, лиге и наличию видео, чтобы быстро находить кандидатов.</p>
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Загрузка...</p>}
-            {error && !loading && (
-              <button className="ghost-btn mt-2 px-4 py-2 text-xs" type="button" onClick={() => loadPlayers(1)}>
-                Повторить
-              </button>
+            {message && <Alert variant="success" description={message} className="mt-3" />}
+            {error && (
+              <div className="mt-3 space-y-2">
+                <Alert variant="warning" description={error} />
+                {!loading && (
+                  <button className="ghost-btn px-4 py-2 text-xs" type="button" onClick={() => loadPlayers(1)}>
+                    Повторить
+                  </button>
+                )}
+              </div>
             )}
           </div>
           <Link href="/app/scout/dashboard" className="ghost-btn">
@@ -403,6 +408,8 @@ export default function ScoutSearchRealPage() {
           </div>
         </div>
 
+        {loading && <LoadingState title="Загружаем список игроков..." subtitle="Обновляем результаты поиска." lines={5} />}
+
         <div className="grid gap-4 md:grid-cols-3">
           {filtered.map((p) => (
             <div key={p.id} className="card space-y-2">
@@ -447,7 +454,7 @@ export default function ScoutSearchRealPage() {
           ))}
           {!loading && filtered.length === 0 && (
             <div className="card md:col-span-3 text-center text-white/70">
-              Игроки не найдены. Снимите фильтры или попробуйте другие параметры.
+              Игроки не найдены. Ослабьте фильтры или измените параметры поиска.
             </div>
           )}
         </div>

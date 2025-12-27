@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api-client";
+import { Alert } from "@/components/alert";
 
 type Vacancy = {
   id: string;
@@ -77,6 +78,42 @@ export default function ClubVacancyEditPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const validateAgeRange = () => {
+    const from = toNumber(form.ageFrom);
+    const to = toNumber(form.ageTo);
+    if (from !== undefined && to !== undefined && from > to) {
+      setError("Возраст «от» не может быть больше «до».");
+      return false;
+    }
+    return true;
+  };
+
+  const validateForModeration = () => {
+    if (!form.title.trim() || !form.description.trim()) {
+      setError("Заполните название и описание вакансии.");
+      return false;
+    }
+    if (parsePositions(form.positions).length === 0) {
+      setError("Укажите хотя бы одну позицию.");
+      return false;
+    }
+    if (!form.locationCountry.trim() || !form.locationCity.trim()) {
+      setError("Укажите страну и город.");
+      return false;
+    }
+    const from = toNumber(form.ageFrom);
+    const to = toNumber(form.ageTo);
+    if (from === undefined || to === undefined) {
+      setError("Укажите возрастной диапазон.");
+      return false;
+    }
+    if (from > to) {
+      setError("Возраст «от» не может быть больше «до».");
+      return false;
+    }
+    return true;
+  };
+
   const load = async () => {
     if (!vacancyId) return;
     setLoading(true);
@@ -114,9 +151,12 @@ export default function ClubVacancyEditPage() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!vacancyId) return;
-    setLoading(true);
     setError(null);
     setMessage(null);
+    if (!validateAgeRange()) {
+      return;
+    }
+    setLoading(true);
     try {
       const payload = {
         title: form.title,
@@ -145,9 +185,12 @@ export default function ClubVacancyEditPage() {
 
   const submitForModeration = async () => {
     if (!vacancyId) return;
-    setLoading(true);
     setError(null);
     setMessage(null);
+    if (!validateForModeration()) {
+      return;
+    }
+    setLoading(true);
     try {
       await apiFetch(`/club/vacancies/${vacancyId}/submit`, { method: "POST", auth: true });
       setMessage("Вакансия отправлена на модерацию");
@@ -178,9 +221,6 @@ export default function ClubVacancyEditPage() {
             {isLocked && (
               <p className="text-sm text-white/60">Вакансия опубликована или на модерации. Редактирование недоступно.</p>
             )}
-            {error && <p className="text-sm text-amber-300">{error}</p>}
-            {message && <p className="text-sm text-emerald-300">{message}</p>}
-            {loading && <p className="text-sm text-white/60">Сохранение...</p>}
           </div>
           <div className="flex gap-3">
             <Link href={`/app/club/vacancies/${vacancyId}/applications`} className="ghost-btn">
@@ -191,6 +231,9 @@ export default function ClubVacancyEditPage() {
             </Link>
           </div>
         </div>
+
+        {error && <Alert variant="warning" description={error} />}
+        {message && <Alert variant="success" description={message} />}
 
         <form className="space-y-6" onSubmit={save}>
           <div className="card grid gap-4 md:grid-cols-2">
@@ -333,7 +376,7 @@ export default function ClubVacancyEditPage() {
 
           <div className="flex flex-wrap items-center gap-3">
             <button className="primary-btn" type="submit" disabled={loading || isLocked}>
-              Сохранить
+              {loading ? "Сохраняем..." : "Сохранить"}
             </button>
             <button
               className="ghost-btn"
