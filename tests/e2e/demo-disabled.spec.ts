@@ -1,9 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+const prodBaseUrl = "https://atmosfera-web.vercel.app";
+
 test("demo disabled in production", async ({ request, baseURL }) => {
-  if (!baseURL || baseURL.includes("localhost") || baseURL.includes("127.0.0.1")) {
+  if (baseURL !== prodBaseUrl) {
     test.skip();
   }
-  const response = await request.get("/demo");
-  expect(response.status()).toBe(404);
+  const demoResponse = await request.get("/demo");
+  expect(demoResponse.status()).toBe(404);
+
+  const dashboardResponse = await request.get("/demo/dashboard");
+  expect(dashboardResponse.status()).toBe(404);
 });

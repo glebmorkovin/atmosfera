@@ -10,7 +10,8 @@
     "postinstall": "node scripts/render-migrate-repair.js",
     "dev:web": "npm run dev --workspace web",
     "dev:api": "npm run start:dev --workspace api",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:prod-smoke": "E2E_BASE_URL=${PROD_BASE_URL:-https://atmosfera-web.vercel.app} playwright test tests/e2e/demo-disabled.spec.ts"
   },
   "prisma": {
     "seed": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' ts-node --transpile-only prisma/seed.ts"
