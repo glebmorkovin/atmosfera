@@ -1,10 +1,11 @@
-import { RoleGuard } from "@/components/role-guard";
-import { UserRole } from "@/lib/auth";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allowed={["ADMIN"] as UserRole[]}>
-      <div className="min-h-screen bg-secondary">{children}</div>
-    </RoleGuard>
-  );
+  const host = headers().get("host") || "";
+  const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
+  if (!isLocal && process.env.NODE_ENV === "production") {
+    notFound();
+  }
+  return <>{children}</>;
 }
