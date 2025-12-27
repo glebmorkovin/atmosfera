@@ -4,15 +4,12 @@ import { randomUUID } from "crypto";
 import { RegisterDto, RegisterRole } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 import { UsersService } from "../users/users.service";
-import { RefreshDto } from "./dto/refresh.dto";
 import { ResetRequestDto } from "./dto/reset-request.dto";
 import { ResetConfirmDto } from "./dto/reset-confirm.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { LogoutDto } from "./dto/logout.dto";
 import { UserRole } from "@prisma/client";
-
-const ACCESS_TTL = "15m";
-const REFRESH_TTL_SEC = 60 * 60 * 24 * 7; // 7 days
+import { ACCESS_TTL, REFRESH_TTL_SEC } from "./auth.constants";
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
 
 type TokenType = "access" | "refresh";
@@ -95,13 +92,13 @@ export class AuthService {
     }
   }
 
-  async refresh(payload: RefreshDto) {
+  async refresh(refreshToken: string) {
     try {
-      const decoded = jwt.verify(payload.refreshToken, JWT_SECRET) as jwt.JwtPayload;
+      const decoded = jwt.verify(refreshToken, JWT_SECRET) as jwt.JwtPayload;
       if (decoded.type !== "refresh") throw new Error("WRONG_TOKEN_TYPE");
       const user = await this.usersService.findById(decoded.sub as string);
       if (!user || !user.isActive) throw new Error("USER_NOT_FOUND");
-      const tokenExists = await this.usersService.validateRefreshToken(decoded.jti as string, payload.refreshToken, user.id);
+      const tokenExists = await this.usersService.validateRefreshToken(decoded.jti as string, refreshToken, user.id);
       if (!tokenExists) throw new Error("TOKEN_REVOKED");
       const tokens = this.signTokens(user);
       await this.usersService.saveRefreshToken(user.id, tokens.refreshToken, REFRESH_TTL_SEC);

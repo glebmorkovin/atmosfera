@@ -32,12 +32,12 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const data = await apiFetch<{ accessToken: string; refreshToken: string; user?: { role?: string } }>("/auth/login", {
+      const data = await apiFetch<{ accessToken: string; refreshToken?: string; user?: { role?: string } }>("/auth/login", {
         method: "POST",
         body: { email, password }
       });
       if (typeof window !== "undefined") {
-        saveTokens(data.accessToken, data.refreshToken);
+        saveTokens(data.accessToken);
         let role = data.user?.role;
         try {
           const me = await apiFetch<{ role: string }>("/users/me", { auth: true });

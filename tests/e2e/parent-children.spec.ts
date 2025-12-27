@@ -1,15 +1,19 @@
 import { expect, test } from "@playwright/test";
 
-const corsHeaders = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-headers": "*",
-  "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS"
+const corsHeaders = (request: any) => {
+  const origin = request.headers()["origin"] || "*";
+  return {
+    "access-control-allow-origin": origin,
+    "access-control-allow-credentials": "true",
+    "access-control-allow-headers": "content-type,authorization,x-request-id",
+    "access-control-allow-methods": "GET,POST,PUT,DELETE,OPTIONS"
+  };
 };
 
 const fulfillJson = (route: any, status: number, body: unknown) =>
   route.fulfill({
     status,
-    headers: corsHeaders,
+    headers: corsHeaders(route.request()),
     contentType: "application/json",
     body: JSON.stringify(body)
   });
@@ -20,7 +24,7 @@ test("parent creates child profile", async ({ page }) => {
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     if (request.method() === "OPTIONS") {
-      return route.fulfill({ status: 204, headers: corsHeaders });
+      return route.fulfill({ status: 204, headers: corsHeaders(request) });
     }
     const url = new URL(request.url());
     const path = url.pathname.replace(/^\/api/, "");

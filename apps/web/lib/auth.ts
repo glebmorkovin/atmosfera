@@ -18,7 +18,10 @@ const clearRoleCookie = () => {
 export const saveTokens = (access?: string, refresh?: string) => {
   if (typeof window === "undefined") return;
   if (access) localStorage.setItem(ACCESS_KEY, access);
-  if (refresh) localStorage.setItem(REFRESH_KEY, refresh);
+  if (refresh) {
+    // refreshToken хранится в cookie, оставляем очистку на случай старых данных
+    localStorage.removeItem(REFRESH_KEY);
+  }
 };
 
 export const saveRole = (role?: string) => {
