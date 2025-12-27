@@ -26,6 +26,7 @@
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
     "exceljs": "^4.4.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.16.2",
     "reflect-metadata": "^0.1.13",

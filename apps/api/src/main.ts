@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { Logger, ValidationPipe } from "@nestjs/common";
 import type { NextFunction, Request, Response } from "express";
 import { randomUUID } from "crypto";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { PrismaService } from "./prisma/prisma.service";
 import { seedDemoUsers } from "./seed-demo";
@@ -11,6 +12,13 @@ import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: false
+    })
+  );
   if (process.env.SEED_DEMO_USERS === "true") {
     try {
       const prisma = app.get(PrismaService);
