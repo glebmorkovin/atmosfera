@@ -6,6 +6,7 @@ const apiBase = apiBaseInput.endsWith("/api") ? apiBaseInput : `${apiBaseInput}/
 const email = process.env.SMOKE_EMAIL || "scout@example.com";
 const password = process.env.SMOKE_PASSWORD || "password123";
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 30000);
+const retries = Number(process.env.SMOKE_RETRIES || 2);
 
 const fetchWithTimeout = async (url, options = {}) => {
   const controller = new AbortController();
@@ -36,13 +37,20 @@ const logStep = (label, status) => {
 };
 
 const runStep = async (label, fn) => {
-  try {
-    logStart(label);
-    const result = await fn();
-    return result;
-  } catch (error) {
-    throw new Error(`${label} failed: ${error.message}`);
+  let lastError;
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      logStart(`${label} (attempt ${attempt}/${retries})`);
+      const result = await fn();
+      return result;
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
   }
+  throw new Error(`${label} failed: ${lastError?.message || "unknown error"}`);
 };
 
 const main = async () => {

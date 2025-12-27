@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 30
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+      SMOKE_TIMEOUT_MS: 60000
+      SMOKE_RETRIES: 3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
