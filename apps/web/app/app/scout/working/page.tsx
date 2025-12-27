@@ -59,7 +59,7 @@ export default function ScoutWorkingPage() {
         </div>
 
         {cards.length === 0 && !loading && (
-          <div className="card text-white/70">Пока нет игроков в работе. Примите запрос или отправьте новый.</div>
+          <div className="card text-white/70">Пока нет игроков в работе. Отправьте запрос или примите входящий.</div>
         )}
 
         {cards.length > 0 && (

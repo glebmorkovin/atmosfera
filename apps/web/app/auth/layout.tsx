@@ -13,7 +13,7 @@ export default function AuthLayout({
             Атмосфера
           </Link>
           <Link href="/auth/login" className="ghost-btn">
-            Войти
+            Войти в кабинет
           </Link>
         </div>
       </header>

@@ -59,7 +59,7 @@ export default function ClubWorkingPage() {
         </div>
 
         {cards.length === 0 && !loading && (
-          <div className="card text-white/70">Пока нет кандидатов. Примите запрос или отправьте новый.</div>
+          <div className="card text-white/70">Пока нет кандидатов. Отправьте запрос или примите входящий.</div>
         )}
 
         {cards.length > 0 && (

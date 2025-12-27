@@ -443,7 +443,9 @@ export default function ClubSearchPage() {
             </div>
           ))}
           {!loading && filtered.length === 0 && (
-            <div className="card md:col-span-3 text-center text-white/70">Игроки не найдены. Попробуйте другие фильтры.</div>
+            <div className="card md:col-span-3 text-center text-white/70">
+              Игроки не найдены. Снимите фильтры или попробуйте другие параметры.
+            </div>
           )}
         </div>
 

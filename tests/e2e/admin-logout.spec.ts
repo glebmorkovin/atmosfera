@@ -63,7 +63,7 @@ test("admin logout clears session", async ({ page }) => {
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/admin\/dashboard/);
 
-  const logoutButton = page.locator("header button");
+  const logoutButton = page.getByRole("button", { name: "Выйти" });
   await expect(logoutButton).toBeVisible();
   await logoutButton.click();
   await expect(page).toHaveURL(/\/auth\/login/);

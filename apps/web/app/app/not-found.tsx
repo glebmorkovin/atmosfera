@@ -18,7 +18,7 @@ export default function AppNotFound() {
         <div className="card space-y-3 text-center">
           <p className="pill w-fit mx-auto">404</p>
           <h1 className="text-2xl font-semibold">Страница не найдена</h1>
-          <p className="text-white/70">Такого адреса нет или страница была перемещена.</p>
+          <p className="text-white/70">Похоже, такой страницы нет. Проверьте адрес или вернитесь в кабинет.</p>
           <Link href={home} className="primary-btn mx-auto w-fit px-6 py-2">
             На главную
           </Link>

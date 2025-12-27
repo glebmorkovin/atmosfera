@@ -222,8 +222,8 @@ export default function ScoutSearchRealPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="pill mb-2">Поиск игроков</p>
-            <h1 className="text-3xl font-bold">Расширенный поиск (реальные данные)</h1>
-            <p className="text-white/70">Требуется запущенный API и токен (войти). Фильтры по позиции/лиге/видео.</p>
+            <h1 className="text-3xl font-bold">Поиск игроков</h1>
+            <p className="text-white/70">Фильтруйте по позиции, лиге и наличию видео, чтобы быстро находить кандидатов.</p>
             {error && <p className="text-sm text-amber-300">{error}</p>}
             {message && <p className="text-sm text-emerald-300">{message}</p>}
             {loading && <p className="text-sm text-white/60">Загрузка...</p>}
@@ -446,7 +446,9 @@ export default function ScoutSearchRealPage() {
             </div>
           ))}
           {!loading && filtered.length === 0 && (
-            <div className="card md:col-span-3 text-center text-white/70">Игроки не найдены. Попробуйте другие фильтры.</div>
+            <div className="card md:col-span-3 text-center text-white/70">
+              Игроки не найдены. Снимите фильтры или попробуйте другие параметры.
+            </div>
           )}
         </div>
 

@@ -28,6 +28,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  if (pathname.startsWith("/demo") && process.env.NODE_ENV === "production") {
+    return new NextResponse("Not Found", { status: 404 });
+  }
+
   const protectedPrefixes = ["/app", "/admin", "/demo", "/notifications"];
   const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 

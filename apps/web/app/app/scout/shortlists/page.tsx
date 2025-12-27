@@ -158,7 +158,9 @@ export default function ScoutShortlistsPage() {
               </div>
             </div>
           ))}
-          {!loading && shortlists.length === 0 && <div className="card md:col-span-2 text-white/70">Нет шортлистов.</div>}
+          {!loading && shortlists.length === 0 && (
+            <div className="card md:col-span-2 text-white/70">Пока нет шортлистов. Создайте первый список.</div>
+          )}
         </div>
       </div>
     </main>

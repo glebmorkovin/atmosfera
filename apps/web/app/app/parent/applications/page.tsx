@@ -122,7 +122,7 @@ export default function ParentApplicationsPage() {
         {loadingChildren && <div className="card text-white/70">Загружаем список детей...</div>}
 
         {filteredItems.length === 0 && !loading && !loadingChildren && (
-          <div className="card text-white/70">Откликов пока нет.</div>
+          <div className="card text-white/70">Откликов пока нет. Здесь появятся ответы по вакансиям.</div>
         )}
 
         <div className="grid gap-4">

@@ -4,7 +4,7 @@ export default function ClubDashboardPage() {
   return (
     <EmptyState
       title="Дашборд клуба"
-      description="Данных пока нет. Управляйте вакансиями и кандидатами из этого раздела."
+      description="Контроль вакансий, откликов и кандидатов начинается здесь."
       actionHref="/app/club/vacancies"
       actionLabel="Перейти к вакансиям"
     />

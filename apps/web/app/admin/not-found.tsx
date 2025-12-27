@@ -9,7 +9,7 @@ export default function AdminNotFound() {
         <div className="card space-y-3 text-center">
           <p className="pill w-fit mx-auto">404</p>
           <h1 className="text-2xl font-semibold">Страница не найдена</h1>
-          <p className="text-white/70">Проверьте адрес или вернитесь в админку.</p>
+          <p className="text-white/70">Страница не найдена. Вернитесь в админку и продолжайте работу.</p>
           <Link href="/admin/dashboard" className="primary-btn mx-auto w-fit px-6 py-2">
             На главную
           </Link>

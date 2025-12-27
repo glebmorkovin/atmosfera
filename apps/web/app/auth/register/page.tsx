@@ -7,10 +7,10 @@ import { getStoredRole, roleHome, saveRole, saveTokens } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 const roles = [
-  { value: "player", label: "Я игрок" },
-  { value: "parent", label: "Я родитель" },
-  { value: "scout", label: "Я скаут" },
-  { value: "club", label: "Я клуб" }
+  { value: "player", label: "Игрок" },
+  { value: "parent", label: "Родитель" },
+  { value: "scout", label: "Скаут" },
+  { value: "club", label: "Клуб" }
 ];
 
 export default function RegisterPage() {
@@ -59,7 +59,7 @@ export default function RegisterPage() {
         }
         saveRole(nextRole);
       }
-      setMessage("Аккаунт создан, токены сохранены. Можно заходить в кабинеты.");
+      setMessage("Аккаунт создан. Перенаправляем в кабинет.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка регистрации");
     } finally {
@@ -72,7 +72,7 @@ export default function RegisterPage() {
       <div className="mb-6 space-y-2">
         <p className="pill w-fit">Регистрация</p>
         <h1 className="text-2xl font-semibold">Создать аккаунт</h1>
-        <p className="text-sm text-white/70">После регистрации получите токены и сможете использовать демо-API.</p>
+        <p className="text-sm text-white/70">Заполните данные и получите доступ к кабинету.</p>
       </div>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 md:grid-cols-2">
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             />
           </label>
           <label className="space-y-1 text-sm text-white/80">
-            <span>Роль</span>
+            <span>Выберите, кто вы</span>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}

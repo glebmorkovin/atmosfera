@@ -370,7 +370,7 @@ export default function ClubShortlistDetailPage() {
                       })}
                       {tableRows.length === 0 && (
                         <tr>
-                          <td className="px-3 py-3 text-white/70" colSpan={11}>Нет игроков.</td>
+                          <td className="px-3 py-3 text-white/70" colSpan={11}>Пока нет игроков в шортлисте.</td>
                         </tr>
                       )}
                     </tbody>
@@ -432,7 +432,7 @@ export default function ClubShortlistDetailPage() {
                   </button>
                 </form>
                 <div className="space-y-2">
-                  {notes.length === 0 && <p className="text-white/70">Заметок нет.</p>}
+                  {notes.length === 0 && <p className="text-white/70">Заметок пока нет.</p>}
                   {notes.map((n) => (
                     <div key={n.id} className="rounded-lg border border-white/10 bg-white/5 p-3 text-sm">
                       {n.text}
