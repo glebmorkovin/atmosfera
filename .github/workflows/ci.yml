@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+      SMOKE_TIMEOUT_MS: 60000
+      SMOKE_RETRIES: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build API
+        run: npm run build --workspace api
+
+      - name: Build Web
+        run: npm run build --workspace web
+
+      - name: Prisma Validate
+        run: npx prisma validate
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Playwright Tests
+        run: npm run test
+
+      - name: Prod Smoke
+        run: npm run prod-smoke
+
+      - name: Upload Playwright Artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore

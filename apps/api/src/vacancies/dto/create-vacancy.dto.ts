@@ -1,4 +1,4 @@
-import { IsArray, IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsArray, IsDateString, IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
 import { VacancyType } from "@prisma/client";
 
 export class CreateVacancyDto {
