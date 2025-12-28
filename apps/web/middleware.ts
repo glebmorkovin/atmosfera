@@ -21,6 +21,19 @@ const roleMatchesPrefix = (role: string | undefined, prefix: string) => {
   return true;
 };
 
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+};
+
+const applySecurityHeaders = (response: Response) => {
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+};
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -57,17 +70,19 @@ export function middleware(request: NextRequest) {
     </div>
   </body>
 </html>`;
-    return new Response(html, {
-      status: 404,
-      headers: { "Cache-Control": "no-store", "Content-Type": "text/html; charset=utf-8" }
-    });
+    return applySecurityHeaders(
+      new Response(html, {
+        status: 404,
+        headers: { "Cache-Control": "no-store", "Content-Type": "text/html; charset=utf-8" }
+      })
+    );
   }
 
   const protectedPrefixes = ["/app", "/admin", "/demo", "/notifications"];
   const isProtected = protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 
   if (!isProtected) {
-    return NextResponse.next();
+    return applySecurityHeaders(NextResponse.next());
   }
 
   const roleCookie = request.cookies.get("userRole")?.value;
@@ -75,24 +90,24 @@ export function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(loginUrl);
+    return applySecurityHeaders(NextResponse.redirect(loginUrl));
   }
 
   if (roleCookie.toUpperCase() === "ADMIN" && !pathname.startsWith("/admin") && !pathname.startsWith("/demo")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/admin/dashboard";
     redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    return applySecurityHeaders(NextResponse.redirect(redirectUrl));
   }
 
   if (!roleMatchesPrefix(roleCookie, pathname)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = roleHome(roleCookie);
     redirectUrl.search = "";
-    return NextResponse.redirect(redirectUrl);
+    return applySecurityHeaders(NextResponse.redirect(redirectUrl));
   }
 
-  return NextResponse.next();
+  return applySecurityHeaders(NextResponse.next());
 }
 
 export const config = {
