@@ -48,7 +48,8 @@ jobs:
       - name: Playwright Tests
         run: npm run test
 
-      - name: Prod Smoke
+      - name: Prod Smoke (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: npm run prod-smoke
 
       - name: Upload Playwright Artifacts
