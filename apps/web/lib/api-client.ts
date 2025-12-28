@@ -64,6 +64,12 @@ async function refreshTokens() {
   });
   if (!res.ok) {
     clearTokens();
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      if (!path.startsWith("/auth")) {
+        window.location.assign("/auth/login");
+      }
+    }
     const contentType = res.headers.get("content-type") || "";
     let message = "Refresh failed";
     let errorRequestId: string | undefined;

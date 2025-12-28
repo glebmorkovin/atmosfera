@@ -137,7 +137,7 @@ export class AuthService {
   async logout(payload: LogoutDto) {
     if (payload.refreshToken) {
       try {
-        const decoded = jwt.verify(payload.refreshToken, JWT_SECRET) as jwt.JwtPayload;
+        const decoded = jwt.verify(payload.refreshToken, JWT_SECRET, { ignoreExpiration: true }) as jwt.JwtPayload;
         if (decoded.jti) {
           await this.usersService.revokeRefreshToken(decoded.jti as string);
         }
