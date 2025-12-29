@@ -57,7 +57,9 @@ async function bootstrap() {
       }
       return callback(new Error("Not allowed by CORS"));
     },
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "x-request-id"],
+    exposedHeaders: ["x-request-id"]
   });
   app.getHttpAdapter().getInstance().set("trust proxy", 1);
   app.setGlobalPrefix("api");
