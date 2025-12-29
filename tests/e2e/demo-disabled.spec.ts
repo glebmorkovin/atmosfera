@@ -3,9 +3,7 @@ import { expect, test } from "@playwright/test";
 const prodBaseUrl = "https://atmosfera-web.vercel.app";
 
 test("demo disabled in production", async ({ request, baseURL }) => {
-  if (baseURL !== prodBaseUrl) {
-    test.skip();
-  }
+  test.skip(baseURL !== prodBaseUrl, "Тест работает только против production домена.");
   const demoResponse = await request.get("/demo");
   expect(demoResponse.status()).toBe(404);
 

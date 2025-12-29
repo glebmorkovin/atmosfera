@@ -39,10 +39,33 @@ npm run dev:web               # Web на 3000
 - Start Command: `npm run migrate:deploy --workspace api && npm run start:prod --workspace api`
 
 ## Vercel (фронтенд)
-- В корне добавлен `vercel.json`, который собирает Next.js из `apps/web` через `@vercel/next` (root проекта можно не менять в настройках Vercel).
+- В `apps/web` есть `vercel.json`, чтобы Vercel гарантированно использовал `@vercel/next` внутри фронтенда (Root Directory в проекте — `apps/web`).
 - Перед деплоем задайте переменные: `NEXT_PUBLIC_API_BASE_URL=https://<ваш-api>/api` для фронта и `CORS_ORIGINS=https://<your-app>.vercel.app,...` для API.
 - Подключите репозиторий в Vercel, включите `npm` (lock-файл в корне) и запустите билд; локально проверка: `npm run build --workspace web && npm run start --workspace web`.
 - API на Vercel не поднимается — разместите бэкенд отдельно (Render/Fly/другое) и прокиньте его URL во фронт.
+
+## Проверки и e2e
+### Playwright (локально/CI)
+```bash
+# локальные e2e (поднимает web на 127.0.0.1:3000)
+npm run test
+```
+
+### Prod-smoke (production)
+```bash
+# прогоняет бизнес-цепочки против прод-домена
+npm run prod-smoke
+```
+
+Переменные окружения для prod-smoke (опционально):
+- `SMOKE_WEB_BASE` / `SMOKE_API_BASE` — базовые URL.
+- `SMOKE_SCOUT_EMAIL`, `SMOKE_PLAYER_EMAIL`, `SMOKE_PARENT_EMAIL`, `SMOKE_CLUB_EMAIL`, `SMOKE_ADMIN_EMAIL` и пароли.
+- `SMOKE_TIMEOUT_MS`, `SMOKE_RETRIES`.
+
+Для Playwright против прод-домена:
+```bash
+E2E_BASE_URL=https://atmosfera-web.vercel.app npm run test
+```
 
 ## Основные эндпоинты API (коротко)
 - Auth: регистрация/логин/refresh/reset/logout.
