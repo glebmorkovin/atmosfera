@@ -1,15 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("rbac redirects to role home", async ({ context, page }, testInfo) => {
-  const baseURL = testInfo.project.use.baseURL || "http://localhost:3000";
-  await context.addCookies([{ name: "userRole", value: "SCOUT", url: baseURL }]);
-  await page.addInitScript(() => {
-    localStorage.setItem("userRole", "SCOUT");
-    localStorage.setItem("accessToken", "access-token");
-    localStorage.setItem("refreshToken", "refresh-token");
+test("rbac redirects to role home", async ({ request }) => {
+  const response = await request.get("/app/player/dashboard", {
+    maxRedirects: 0,
+    headers: { Cookie: "userRole=SCOUT" }
   });
-
-  await page.goto("/app/player/dashboard", { waitUntil: "domcontentloaded" });
-  await page.waitForURL(/\/app\/scout\/dashboard/, { timeout: 10_000 });
-  await expect(page).toHaveURL(/\/app\/scout\/dashboard/);
+  expect(response.status()).toBe(307);
+  expect(response.headers()["location"]).toContain("/app/scout/dashboard");
 });
